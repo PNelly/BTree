@@ -27,61 +27,60 @@ public class Encoder {
     // Encode String -> long
     public long encode(String sequence){
 
-	long output = 0;
-	long t, c, g;
+		long output = 0;
+		long t, c, g;
 
-	for(int i=0;i<sequence.length();i++){
+		for(int i=0;i<sequence.length();i++){
 	    
-	    t = tBits >>> 2*i;
-	    c = cBits >>> 2*i;
-	    g = gBits >>> 2*i;
+	    	t = tBits >>> 2*i;
+	    	c = cBits >>> 2*i;
+	    	g = gBits >>> 2*i;
 
-	    switch(sequence.charAt(i)){
-	    
-	    case 'a':
-		// ignore
-		break;
-	    case 't':
-		output = output | t;
-		break;
-	    case 'c':
-		output = output | c;
-		break;
-	    case 'g':
-		output = output | g;
-		break;
-	    }
-	}
+		    switch(sequence.charAt(i)){
+	        case 'a':
+				// ignore
+				break;
+			case 't':
+				output = output | t;
+				break;
+			case 'c':
+				output = output | c;
+				break;
+			case 'g':
+				output = output | g;
+				break;
+			}
+		}
 
-	return output;
+		return output;
     }
 
     // Decode Long -> String
     public String decode(long sequenceBits){
 
-	StringBuilder builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder();
 
-	long charBits;
+		long charBits;
 
-	for(int i=0; i<sequenceLength; i++){
-	
-	    // btiwise & w/ tBits give leading bits
-	    charBits = sequenceBits & tBits;
+		for(int i=0; i<sequenceLength; i++){
 
-	    // switch only accepts int and smaller
-	    if(charBits==aBits)
-		builder.append('a');
-	    if(charBits==tBits)
-		builder.append('t');
-	    if(charBits==cBits)
-		builder.append('c');
-	    if(charBits==gBits)
-		builder.append('g');
+			// btiwise & w/ tBits give leading bits
+			charBits = sequenceBits & tBits;
 
-	    sequenceBits = sequenceBits << 2;	    
-	}
+			// switch only accepts int and smaller
+			if(charBits==aBits)
+			builder.append('a');
+			if(charBits==tBits)
+			builder.append('t');
+			if(charBits==cBits)
+			builder.append('c');
+			if(charBits==gBits)
+			builder.append('g');
 
-	return builder.toString();
+			sequenceBits = sequenceBits << 2;
+		}
+
+		return builder.toString();
 
     }
 
