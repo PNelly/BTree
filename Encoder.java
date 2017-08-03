@@ -51,36 +51,39 @@ public class Encoder {
 				break;
 			}
 		}
-
-		return output;
+		// shift past sign bit
+		return (output >>> 2);
     }
 
     // Decode Long -> String
     public String decode(long sequenceBits){
 
-		StringBuilder builder = new StringBuilder();
+	// shift back into sign bit
+	sequenceBits = sequenceBits << 2;
 
-		long charBits;
+	StringBuilder builder = new StringBuilder();
 
-		for(int i=0; i<sequenceLength; i++){
+	long charBits;
 
-			// btiwise & w/ tBits give leading bits
-			charBits = sequenceBits & tBits;
+       	for(int i=0; i<sequenceLength; i++){
 
-			// switch only accepts int and smaller
-			if(charBits==aBits)
-			builder.append('a');
-			if(charBits==tBits)
-			builder.append('t');
-			if(charBits==cBits)
-			builder.append('c');
-			if(charBits==gBits)
-			builder.append('g');
+       		// btiwise & w/ tBits give leading bits
+       		charBits = sequenceBits & tBits;
 
-			sequenceBits = sequenceBits << 2;
-		}
+		// switch only accepts int and smaller
+       		if(charBits==aBits)
+       		  builder.append('a');
+       		if(charBits==tBits)
+       		  builder.append('t');
+       		if(charBits==cBits)
+       		  builder.append('c');
+       		if(charBits==gBits)
+       		  builder.append('g');
 
-		return builder.toString();
+       		sequenceBits = sequenceBits << 2;
+       	}
+
+       	return builder.toString();
 
     }
 
