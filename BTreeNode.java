@@ -4,7 +4,7 @@
 public class BTreeNode {
 
     private int numKeys;
-    private TreeObject[] keyList;
+    private Long[] keyList;
     private BTreeNode[] childList;
 
     /**
@@ -12,7 +12,7 @@ public class BTreeNode {
      * @param size
      */
     public BTreeNode(int size){
-        keyList = new TreeObject[size];
+        keyList = new Long[size];
         childList = new BTreeNode[size+1];
         numKeys = 0;
     }
@@ -23,9 +23,9 @@ public class BTreeNode {
      * @param t
      * @return
      */
-    public int insertKey(TreeObject t){
+    public int insertKey(Long t){
         int i = 0;
-        while((i < numKeys) && (t.getKey() < keyList[i].getKey())){
+        while((i < numKeys) && (t > keyList[i])){
             i++;
         }
         numKeys++;
@@ -33,7 +33,7 @@ public class BTreeNode {
             keyList[i] = t;
             return i;
         }
-        for(int j = numKeys; j > i; j--){
+        for(int j = numKeys-1; j > i; j--){
             keyList[j] =keyList[j-1];
         }
         keyList[i] = t;
@@ -48,14 +48,14 @@ public class BTreeNode {
      */
     public int insertChild(BTreeNode n){
         int i = 0;
-        while((i < numKeys+1) && (n.getTreeObject(0).getKey() < keyList[i].getKey())){
+        while((i < numKeys+1) && (n.getTreeObject(0) > keyList[i])){
          i++;
         }
         if(i == numKeys +1){
             childList[i] = n;
             return i;
         }
-        for(int j = numKeys +1; j > i; j--){
+        for(int j = numKeys; j > i; j--){
             childList[j] = childList[j-1];
         }
         childList[i] = n;
@@ -68,7 +68,7 @@ public class BTreeNode {
      * @param i
      * @return
      */
-    public TreeObject getTreeObject(int i){
+    public Long getTreeObject(int i){
         if((i > numKeys) || (i < 0)){
             //error
         }
