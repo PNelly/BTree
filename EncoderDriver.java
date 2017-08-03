@@ -4,7 +4,8 @@ import java.util.Random; // for testing
 public class EncoderDriver {
 
 	public static void main(String[] args){
-		fileParseTest(args[0]);
+		encoderTest();
+		//fileParseTest(args[0]);
 	}
 
 	private static void fileParseTest(String filepath) {

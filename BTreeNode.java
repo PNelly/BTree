@@ -4,6 +4,7 @@
 public class BTreeNode {
 
     private int numKeys;
+    private BTreeNode parent;
     private Long[] keyList;
     private BTreeNode[] childList;
 
@@ -12,6 +13,11 @@ public class BTreeNode {
      * @param size
      */
     public BTreeNode(int size){
+        this(size, null);
+    }
+
+    public BTreeNode(int size, BTreeNode parent) {
+        this.parent = parent;
         keyList = new Long[size];
         childList = new BTreeNode[size+1];
         numKeys = 0;
