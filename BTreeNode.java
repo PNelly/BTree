@@ -107,14 +107,29 @@ public class BTreeNode implements Serializable{
     public Long[] rightOf(int i){
         Long[] l = new Long[keyList.length];
         System.arraycopy(keyList,i,l,keyList.length-1,keyList.length);
+	cleanRightKeys(i);
         return l;
     }
 
     public BTreeNode[] getRightChildList(int i) {
         BTreeNode[] c = new BTreeNode[keyList.length+1];
         System.arraycopy(childList,i,c,keyList.length, keyList.length+1);
+	cleanRightChildren(i);
         return c;
     }
+
+    private void cleanRightKeys(int i){
+	for(int j = i; i<keyList.length; j++){
+	    keyList[j] = null;
+	}
+    }
+
+    private void cleanRightChildren(int i){
+	for(int j = i; i<keyList.length+1; j++){
+	    childList[j] = null;
+	}
+    }
+
 
     public boolean isLeaf(){
          return(childList.length == 0);

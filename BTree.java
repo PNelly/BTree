@@ -8,17 +8,21 @@
 
 public class BTree {
 
-    // ** Need degree -> size conversion
-    // ** check cleanup of get right methods
-    // ** getChild does not make null return
+    // -- // Fields // -- //
 
     private int degree;
+    private int maxKeys;
     private BTreeNode root;
 
+    // -- // Constructor // -- //
+
     public BTree(int degree){
-	this.degree = degree;
-	root = new BTreeNode(degree);
+	this.degree  = degree;
+	this.maxKeys = degree*2 -1;
+	this.root    = new BTreeNode(maxKeys);
     }
+
+    // -- // Public Methods // -- //
 
     public void insert(Long key){
 	recursiveInsert(key, root);
@@ -36,22 +40,23 @@ public class BTree {
 	find(new Long(key));
     }
 
+    // -- // Private Methods // -- //
+
     private void split(BTreeNode node){
 	
 	BTreeNode parent, right;
         parent = node.getParent();
 
 	if( parent == null){
-	    parent = new BTreeNode(degree);
+	    parent = new BTreeNode(maxKeys);
 	    node.setParent(parent);
-	    root = parent;
+	    root   = parent;
 	    parent.insertChild(node);
 	}
 
-	Long medianKey = node.getIthKey(degree/2); // **
+	Long medianKey = node.getIthKey(degree/2);
 	parent.insertKey(medianKey);
-	right = new BTreeNode(degree,
-			      parent,
+	right = new BTreeNode(parent,
 			      node.rightOf(medianKey),
 			      node.getRightChildList(medianKey));
 
@@ -82,7 +87,7 @@ public class BTree {
 	if(objective != null)
 	    return objective;
 
-	recursiveSearch(key, node.getChild(key)); // **
+	return recursiveSearch(key, node.getChild(key));
 
     }
 
