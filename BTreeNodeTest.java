@@ -11,7 +11,7 @@ public class BTreeNodeTest {
 
         System.out.println("Print out of the keys of each object in test node");
         for(int j =  0; j < nodesize; j++){
-            System.out.println(node.getTreeObject(j).getKey());
+            System.out.println(node.getTreeObject(j));
         }
         System.out.println();
 
@@ -22,16 +22,16 @@ public class BTreeNodeTest {
         for(int j =  0; j < nodesize; j++){
             System.out.println("Print out of the keys of each object in child " + j + " of test node");
             for(int k = 0; k < nodesize; k++) {
-                System.out.println(node.getChild(j).getTreeObject(k).getKey());
+                System.out.println(node.getChild(j).getTreeObject(k));
             }
             System.out.println();
         }
 
     }
 
-    private static TreeObject randomTObject(){
+    private static Long randomTObject(){
         Random rand = new Random();
-        TreeObject t = new TreeObject(rand.nextLong());
+        Long t =  rand.nextLong();
         return t;
     }
 
