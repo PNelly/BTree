@@ -6,6 +6,7 @@ import java.io.Serializable;
 public class BTreeNode implements Serializable{
 
     private int numKeys;
+    private int numChildren;
     private Long[] keyList;
     private BTreeNode[] childList;
     private BTreeNode parent;
@@ -18,19 +19,31 @@ public class BTreeNode implements Serializable{
         keyList = new Long[size];
         childList = new BTreeNode[size+1];
         numKeys = 0;
+        numChildren = 0;
     }
 
     public BTreeNode(int size, BTreeNode  parent){
         keyList = new Long[size];
         childList = new BTreeNode[size +1];
         numKeys = 0;
+        numChildren = 0;
         this.parent = parent;
     }
 
     public BTreeNode(BTreeNode parent, Long[] keys, BTreeNode[] children){
         this.parent = parent;
-        keyList = keys;
+        this.keyList = keys;
         this.childList = children;
+        // catch up counters and reset parents
+		for(int i=0; i<keyList.length; i++){
+		    if(keyList[i] != null) 
+		    	numKeys++;
+		    if(childList[i] != null){ 
+		    	numChildren++;
+		    	childList[i].setParent(this);
+		    }
+		}
+		if(childList[childList.length-1] != null) numChildren++;
     }
 
 
@@ -67,6 +80,7 @@ public class BTreeNode implements Serializable{
         while((i < numKeys) && (n.getTreeObject(0) > keyList[i])){
          i++;
         }
+        numChildren++;
         if(i == numKeys +1){
             childList[i] = n;
             return i;
@@ -106,33 +120,39 @@ public class BTreeNode implements Serializable{
 
     public Long[] rightOf(int i){
         Long[] l = new Long[keyList.length];
-        System.arraycopy(keyList,i,l,keyList.length-1,keyList.length);
-	cleanRightKeys(i);
+        //System.arraycopy(keyList,i,l,keyList.length-1,keyList.length);
+        System.arraycopy(keyList,i+1,l,0,keyList.length/2);
+        cleanRightKeys(i);
         return l;
     }
 
     public BTreeNode[] getRightChildList(int i) {
         BTreeNode[] c = new BTreeNode[keyList.length+1];
-        System.arraycopy(childList,i,c,keyList.length, keyList.length+1);
-	cleanRightChildren(i);
+        //System.arraycopy(childList,i,c,keyList.length, keyList.length+1);
+        System.arraycopy(childList,i+1,c,0,keyList.length/2+1);
+        cleanRightChildren(i+1);
         return c;
     }
 
     private void cleanRightKeys(int i){
-	for(int j = i; i<keyList.length; j++){
-	    keyList[j] = null;
-	}
+		for(int j = i; j<keyList.length; j++){
+		    keyList[j] = null;
+		    numKeys--;
+		}
     }
 
     private void cleanRightChildren(int i){
-	for(int j = i; i<keyList.length+1; j++){
-	    childList[j] = null;
-	}
+		for(int j = i; j<childList.length; j++){
+			if(childList[j]!=null){
+		        childList[j] = null;
+		        numChildren--;
+			}
+		}
     }
 
 
     public boolean isLeaf(){
-         return(childList.length == 0);
+         return(numChildren == 0);
     }
 
     public boolean isFull(){
@@ -149,7 +169,7 @@ public class BTreeNode implements Serializable{
     }
 
     public Long getIthKey(int i){
-	return keyList[i];
+    	return keyList[i];
     }
 
     public BTreeNode getParent() {
@@ -161,11 +181,15 @@ public class BTreeNode implements Serializable{
     }
 
     public BTreeNode getChild(Long key) {
-        int i = 0;
+        /*int i = 0;
         while((i < numKeys) && (key > keyList[i])){
             i++;
         }
-        return childList[i + 1];
+        return childList[i + 1];*/
+		int i=0;
+		while( (i<numKeys) && (key>keyList[i]) )
+		    i++;
+		return childList[i];
     }
 
     public void setBiteOffset(int i){
@@ -174,5 +198,24 @@ public class BTreeNode implements Serializable{
 
     public int getBiteOffset(){
         return biteOffset;
+    }
+    
+    // -- // Test Assistance // -- //
+    
+    public int getNumKeys(){
+    	return numKeys;
+    }
+    
+    public int getNumChildren(){
+    	return numChildren;
+    }
+    
+    public BTreeNode getIthChild(int i){
+    	return childList[i];
+    }
+    
+    @Override
+    public String toString(){
+    	return ("keys: "+keyList.toString()+" chx: "+childList.toString());
     }
 }
