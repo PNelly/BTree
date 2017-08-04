@@ -133,6 +133,10 @@ public class BTreeNode implements Serializable{
         return null;
     }
 
+    public Long getIthKey(int i){
+	return keyList[i];
+    }
+
     public BTreeNode getParent() {
         return parent;
     }
