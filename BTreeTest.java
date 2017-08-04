@@ -30,37 +30,32 @@ public class BTreeTest{
 		long item;
 		
 		for(int i=0; i<iterations; i++){
-			System.out.print("                        ");
-		    System.out.print("\rinsertion "+i);
+		    System.out.print("\rinsertion "+(i+1));
+		    //item = (long) RNG.nextInt(100);
 		    item = RNG.nextLong();
 		    tree.insert(item);
-		    //tree.testTraversal();
 		    insertedKeys.add(item);
 		}
+		
+		System.out.println();
 		
 		for(int i=0; i<iterations; i++){
 		    Long objective = insertedKeys.get(i);
 		    Long result    = tree.find(objective);
-	        if(result != null){
-	        	if(objective.longValue()==result.longValue()){
-	        		System.out.print("\rsearch "+i+" successful");
-	        		numSuccessfulSearches++;
-	        	} else {
-	        		System.out.print("\rsearch "+i+" unsuccessful, no match");
-	        	}
-	        } else {
-	        		System.out.print("\rsearch "+i+" unsuccessful, found nothing");
-	        }
-	        System.out.print("\r                                                    ");
-		}
+		    
+		    if(result != null && objective.longValue()==result.longValue())
+		    	numSuccessfulSearches++;
 		
-		System.out.println(numSuccessfulSearches+" of "+iterations+" successful");
-	}
+		System.out.print("\r"+numSuccessfulSearches+" of "+iterations+" searches successful");
+		}
+
+		System.out.println();
+    }
 
 
     public static void main(String[] args){
 		System.out.println("Beginning BTree Test");
-		BTreeTest test = new BTreeTest(2,1000);
+		BTreeTest test = new BTreeTest(10,10000);
 		test.runBTreeTest();
 		System.out.println("done!");
     }

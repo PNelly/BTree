@@ -54,12 +54,11 @@ public class BTree {
 		    parent.insertChild(node);
 		}
 	
-		int medianKeyIndex = degree / 2;
-		parent.insertKey(node.getIthKey(medianKeyIndex));
+		int medianKeyIndex = degree -1;
+		parent.insertKey(node.getTreeObject(medianKeyIndex));
 		right = new BTreeNode(parent,
 				      node.rightOf(medianKeyIndex),
 				      node.getRightChildList(medianKeyIndex));
-	
 		parent.insertChild(right);
 
     }
@@ -80,7 +79,8 @@ public class BTree {
 
     private Long recursiveSearch(Long key, BTreeNode node){
 
-		if(node == null) return null;
+		if(node == null)
+			return null;
 	
 		Long objective = node.findKey(key);
 	
@@ -89,21 +89,6 @@ public class BTree {
 	
 		return recursiveSearch(key, node.getChild(key));
 
-    }
-    
-    // -- // Test Assistance // -- //
-    
-    public void testTraversal(){
-    	testTraversal(root);
-    }
-    
-    public void testTraversal(BTreeNode node){
-    	System.out.println(node.toString());
-    	for(int i=0;i<node.getNumChildren();i++){
-    		if(node.getIthChild(i)!=null)
-    			testTraversal(node.getIthChild(i));
-    	}
-    	
     }
 
 }

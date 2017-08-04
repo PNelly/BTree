@@ -1,21 +1,33 @@
-/**
- * Created by admin on 7/29/2017.
- */
+
 public class TreeObject {
 
-    public long getKey() {
-        return key;
+	private Long key;
+	private int  frequency;
+	
+	public TreeObject(Long key){
+        this.key = key;
+        frequency = 0;
     }
+	
+	public TreeObject(long key){
+		this.key = new Long(key);
+		frequency = 0;
+	}
 
     public void setKey(long key) {
         this.key = key;
     }
-
-    private long key;
-
-    public TreeObject(Long key){
-        this.key = key;
+    
+    public Long getKey() {
+        return key;
     }
-
+    
+    public void incrementFrequency(){
+    	frequency++;
+    }
+    
+    public int getFrequency(){
+    	return frequency;
+    }
 
 }
