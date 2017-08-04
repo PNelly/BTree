@@ -3,7 +3,7 @@ import java.io.Serializable;
 /**
  * Created by admin on 7/29/2017.
  */
-public class BTreeNode implements Serializable {
+public class BTreeNode implements Serializable{
 
     private int numKeys;
     private Long[] keyList;
