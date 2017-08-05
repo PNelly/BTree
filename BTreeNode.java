@@ -204,10 +204,9 @@ public class BTreeNode {
         StringBuilder sb = new StringBuilder();
         sb.append("Node Address: ");
         sb.append(byteOffset);
-        sb.append("Parent Address: ");
+        sb.append("\nParent Address: ");
         sb.append(parent);
-        sb.append("\n");
-        sb.append("KeyList: \n");
+        sb.append("\nKeyList: \n");
         for (int i = 0; keyList[i] != null; i++) {
             sb.append(keyList[i].getFrequency());
             sb.append(" ");

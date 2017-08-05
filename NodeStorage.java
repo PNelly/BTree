@@ -55,6 +55,20 @@ public final class NodeStorage {
         return readAtOffset(byteAddress);
     }
 
+    public static void dumpTree() {
+        File f = new File("C:\\Users\\Moosejaw\\Desktop\\BTree\\dump");
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
+            for(int i = 4; i < file.length(); i += objSize) {
+                bw.write(readAtOffset(i).toString());
+                bw.newLine();
+            }
+            bw.flush();
+            bw.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
     private static BTreeNode readLast() {
         return readAtOffset(-1);
     }

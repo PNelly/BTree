@@ -36,7 +36,7 @@ public class BTreeTest{
 		    tree.insert(item);
 		    insertedKeys.add(item);
 		}
-		
+		NodeStorage.dumpTree();
 		System.out.println();
 		
 		for(int i=0; i<iterations; i++){

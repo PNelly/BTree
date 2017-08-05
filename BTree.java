@@ -54,6 +54,7 @@ public class BTree {
 			parent.insertChild(node);
 			parent.setbyteOffset(NodeStorage.saveNode(parent));
 		    node.setParent(parent);
+			NodeStorage.updateNode(node);
 		    root   = parent;
 		}
 	
@@ -78,8 +79,10 @@ public class BTree {
 	
 		if(!node.isLeaf())
 		    recursiveInsert(key, node.getChild(key));
-		else
-		    node.insertKey(key);
+		else {
+			node.insertKey(key);
+			NodeStorage.updateNode(node);
+		}
 
     }
 
