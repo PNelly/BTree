@@ -20,8 +20,7 @@ public class BTree {
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
-		NodeStorage.setSize(degree);
-		NodeStorage.setMetaData();
+		NodeStorage.setConfig(degree, "C:\\Users\\Moosejaw\\Desktop\\BTree\\test");
     }
 
     // -- // Public Methods // -- //
@@ -35,8 +34,7 @@ public class BTree {
     }
 
     public Long find(Long key){
-    	//return recursiveSearch(key, root);
-		return searchTree(key, root);
+    	return recursiveSearch(key, root);
     }
 
     public Long find(long key){
@@ -45,64 +43,46 @@ public class BTree {
 
     // -- // Private Methods // -- //
 
-    private void split(BTreeNode node){
+	//On split we want to reassign to the new parent node, so return that
+    private BTreeNode split(BTreeNode node){
 
 		BTreeNode parent, right;
-	    int pAddress = node.getParent();
+	    parent = node.getParent();
 	
-		if(pAddress == -1){
+		if(parent == null){
 		    parent = new BTreeNode(maxKeys);
 			parent.insertChild(node);
-			//TODO: Error handling for bad saves (return -1)
-			parent.setbyteOffset(saveNode(parent));
-		    node.setParent(parent.getByteOffset());
+			parent.setbyteOffset(NodeStorage.saveNode(parent));
+		    node.setParent(parent);
 		    root   = parent;
-
-		} else {
-			parent = loadNode(node.getParent());
 		}
 	
 		int medianKeyIndex = degree -1;
 		parent.insertKey(node.getTreeObject(medianKeyIndex));
-		right = new BTreeNode(parent.getByteOffset(),
+		right = new BTreeNode(parent.getbyteOffset(),
 				      node.rightOf(medianKeyIndex),
-				      node.getRightChildList(medianKeyIndex));
-		right.setbyteOffset(saveNode(right));
+				      node.getRightChildList(medianKeyIndex),
+				      NodeStorage.nextWritePos());
+		NodeStorage.saveNode(right);
 		parent.insertChild(right);
-		updateNode(parent);
-		updateNode(node);
-
+		NodeStorage.updateNode(parent);
+		return parent;
     }
 
     private void recursiveInsert(Long key, BTreeNode node){
 	
 		if(node.isFull()){
-		    split(node);
-		    node = loadNode(node.getParent());
+		    node = split(node);
+		    //node = node.getParent();
 		}
 	
 		if(!node.isLeaf())
-		    recursiveInsert(key, loadNode(node.getChild(key)));
+		    recursiveInsert(key, node.getChild(key));
 		else
 		    node.insertKey(key);
-		updateNode(node);
+
     }
 
-	private Long searchTree(Long key, BTreeNode node) {
-		if (node == null)
-			return null;
-		Long objective;
-		while ((objective = node.findKey(key)) == null) {
-			node = loadNode(node.getChild(key));
-			if (node.isLeaf()) {
-				System.out.println("FUCK");
-				System.exit(-1);
-			}
-		}
-		return objective;
-	}
-
-	/*
     private Long recursiveSearch(Long key, BTreeNode node){
 
 		if(node == null)
@@ -113,22 +93,8 @@ public class BTree {
 		if(objective != null)
 		    return objective;
 	
-		return recursiveSearch(key, loadNode(node.getChild(key)));
+		return recursiveSearch(key, node.getChild(key));
 
     }
-    */
-
-	private BTreeNode loadNode(int byteAddress) {
-		return NodeStorage.readAt(byteAddress);
-	}
-
-	private int saveNode(BTreeNode n) {
-		return (int)NodeStorage.writeNext(n);
-	}
-
-	private void updateNode(BTreeNode n) {
-		//Make sure to update our offset in the event this is a new node we're inserting on
-		n.setbyteOffset((int)NodeStorage.writeAt(n.getByteOffset(), n));
-	}
 
 }

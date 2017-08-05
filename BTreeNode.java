@@ -1,14 +1,13 @@
-import java.io.Serializable;
 import java.util.Arrays;
 
-public class BTreeNode implements Serializable{
+public class BTreeNode {
 
-    private int numKeys;            //Current number of keys in the node
-    private int numChildren;        //Current number of children in the node
-    private TreeObject[] keyList;   //Array holding TreeObjects with keys/frequency count
-    private int[] childList;        //Array holding pointers to child BTreeNode Objects
-    private int parent;             //ByteOffset pointer to the parent. -1 indicates this the root node.
-    private int byteOffset;         //ByteOffset pointer to this node
+    private int numKeys;
+    private int numChildren;
+    private TreeObject[] keyList;
+    private int[] childList;
+    private int parent;
+    private int byteOffset;
 
     // -- // Constructors // -- //
     
@@ -17,8 +16,8 @@ public class BTreeNode implements Serializable{
         childList = new int[size+1];
         numKeys = 0;
         numChildren = 0;
-        parent = -1; //We're a root!
-        byteOffset = -1; //Freshly made node, hasn't been saved yet
+        parent = -1;      //We're root
+        byteOffset = -1;    //Has yet to be determined
     }
 
     public BTreeNode(int size, int parent){
@@ -29,22 +28,20 @@ public class BTreeNode implements Serializable{
         this.parent = parent;
     }
 
-    public BTreeNode(int parent, TreeObject[] keys, int[] children){
+    public BTreeNode(int parent, TreeObject[] keys, int[] children, int byteOffset){
         this.parent = parent;
         this.keyList = keys;
         this.childList = children;
+        this.byteOffset = byteOffset;
         // catch up counters and reset parents
-		for(int i=0; i < keyList.length; i++){
-		    if(keyList[i] != null)
+		for(int i=0; i<keyList.length; i++){
+		    if(keyList[i] != null) 
 		    	numKeys++;
 		    if(childList[i] != 0){
 		    	numChildren++;
-                //Not sure what the purpose of this was when it was an obj ref?
-		    	//childList[i].setParent(byteOffset);
 		    }
 		}
-        //One extra check since childList is 1 longer than keyList
-        if(childList[childList.length-1] != 0) numChildren++;
+		if(childList[childList.length-1] != 0) numChildren++;
     }
     
     // -- // Public Methods // -- //
@@ -63,7 +60,7 @@ public class BTreeNode implements Serializable{
     
     public int insertKey(Long t){
         int i = 0;
-        while( (i < numKeys) && (t > keyList[i].getKey().longValue())){
+        while( (i<numKeys) && (t > keyList[i].getKey().longValue())){
             i++;
         }
         numKeys++;
@@ -88,42 +85,48 @@ public class BTreeNode implements Serializable{
 
 
     public int insertChild(BTreeNode n){
+        //If our offset is 0, we haven't saved the node.  Take care of that now.
+
+        //TODO: This is sloppy the check is currently inside this method call, need to extract
+        n.getbyteOffset();
+
         int i = 0;
-        while( (i < numKeys) && (n.getTreeObject(0) > keyList[i].getKey()) ){
+        while( (i<numKeys) && (n.getTreeObject(0) > keyList[i].getKey()) ){
          i++;
         }
         numChildren++;
-
-        //If we're past the edge of the keys, insert on the tail and return
         if(i == numKeys +1){
-            childList[i] = n.getByteOffset();
+            childList[i] = n.getbyteOffset();
             return i;
         }
-
-        //Otherwise shift everything to open to correct index for the child
         for(int j = numKeys; j > i; j--){
             childList[j] = childList[j-1];
         }
-        //Insert and return
-        childList[i] = n.getByteOffset();
+        childList[i] = n.getbyteOffset();
         return i;
     }
 
      	// -- // Getters and Setters // -- //
     
-    public int getParent() {
-        return parent;
+    public BTreeNode getParent() {
+        if (parent == -1)
+            return null; //We're the root
+
+        return NodeStorage.loadNode(parent);
     }
 
-    public void setParent(int byteLocation){
-        parent = byteLocation;
+    public void setParent(BTreeNode node){
+        parent = node.getbyteOffset();
     }
 
     public void setbyteOffset(int i){
         byteOffset = i;
     }
 
-    public int getByteOffset(){
+    public int getbyteOffset(){
+        //If byteOffset is -1, it's a new tree and we havent saved this node yet
+        if (byteOffset == -1)
+            byteOffset = NodeStorage.saveNode(this);
         return byteOffset;
     }
 
@@ -138,22 +141,22 @@ public class BTreeNode implements Serializable{
         return keyList[i].getKey();
     }
 
-    public int[] getChildPointers() {
+    public int[] getChildList() {
         return childList;
     }
 
-    public int getChild(int i){
+    public BTreeNode getChild(int i){
         if((i > numKeys +1) || (i < 0)){
             //error
         }
-        return childList[i];
+        return NodeStorage.loadNode(childList[i]);
     }
     
-    public int getChild(Long key) {
+    public BTreeNode getChild(Long key) {
 		int i=0;
 		while( (i<numKeys) && (key>keyList[i].getKey()) )
 		    i++;
-		return childList[i];
+		return NodeStorage.loadNode(childList[i]);
     }
 
     public TreeObject[] rightOf(int i){
@@ -178,22 +181,6 @@ public class BTreeNode implements Serializable{
         }
         return null;
     }
-
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Parent Address: ");
-        sb.append(parent);
-        sb.append("\n");
-        sb.append("KeyList: \n");
-        for (int i = 0; keyList[i] != null; i++) {
-            sb.append(keyList[i].getFrequency());
-            sb.append(" ");
-            sb.append(keyList[i].getKey());
-            sb.append("\n");
-        }
-        sb.append("\nChildList: "+Arrays.toString(childList));
-        return sb.toString();
-    }
     
     // -- // Private Methods // -- //
     
@@ -206,11 +193,29 @@ public class BTreeNode implements Serializable{
 
     private void cleanRightChildren(int i){
 		for(int j = i; j<childList.length; j++){
-			if( childList[j] != -1){
-		        childList[j] = -1;
+			if(childList[j] != 0){
+		        childList[j] = 0;
 		        numChildren--;
 			}
 		}
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Node Address: ");
+        sb.append(byteOffset);
+        sb.append("Parent Address: ");
+        sb.append(parent);
+        sb.append("\n");
+        sb.append("KeyList: \n");
+        for (int i = 0; keyList[i] != null; i++) {
+            sb.append(keyList[i].getFrequency());
+            sb.append(" ");
+            sb.append(keyList[i].getKey());
+            sb.append("\n");
+        }
+        sb.append("\nChildList: "+ Arrays.toString(childList));
+        return sb.toString();
     }
     
 }

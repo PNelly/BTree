@@ -4,127 +4,147 @@ import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
-/**
- * Use RandomAccessFile to read and write NodeData to a file
- * In the interest of optimizing size, we pull individual attributes and convert to bytes
- * Object Serialization is far simpler, but gives about 3x the size desired per node
- *
- * @author Michael Burke
- * CS321 Summer 2017
- */
 public final class NodeStorage {
 
-    private static int size;
     private static int objSize;
-    private static long fileLength;
+    private static int MaxKeys;
+    private static int MaxChildren;
     private static File file;
 
-    // -- // Constructors // -- //
-    public static void setSize(int n) {
-        size = n;
-        objSize = calculateObjSize(size);
-        System.out.println(objSize);
+    public static void setConfig(int degree, String filepath) {
+        file = new File(filepath);
+        nodeSize(degree);
+        if (file.length() == 0)
+            setMetaData();
     }
 
-    public static void setFile(String filepath) {
-        try {
-            file = new File(filepath);
-        } catch (Exception e) {
-            System.out.println(e);
-            System.out.println("Exiting program...");
-            System.exit(0);
-        }
+    public static int nodeSize(int degree) {
+        MaxKeys = (degree*2)-1;
+        MaxChildren = degree*2;
+        objSize = 4;                            //Parent pointer        (int, 4 bytes)
+        objSize += (MaxKeys * 8);               //Keys                  (long, 8 bytes)
+        objSize += (MaxKeys * 4);               //Frequency of each key (int, 4 bytes)
+        objSize += (MaxChildren * 4);           //Child pointers        (int, 4 bytes)
+        return objSize;
     }
 
-    public static void setMetaData() {
+    private static void setMetaData() {
         try {
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             raf.seek(0);
             raf.write(ByteBuffer.allocate(4).putInt(4).array());
-            System.out.println(raf.getFilePointer());
+            raf.close();
         } catch (Exception e) {
-            System.out.println("It asplode");
-            System.exit(0);
+            System.out.println(e);
         }
     }
 
-    // -- // Public Methods // -- //
-
-    public static long writeNext(BTreeNode o) {
-        return writeAt(-1, o);
+    public static int nextWritePos() {
+        return (int)file.length();
     }
 
-    public static void readLast() {
-        readAt(-1);
+    public static void updateNode(BTreeNode n) {
+        writeAtOffset(n.getbyteOffset(), n);
     }
 
-    public static long writeAt(long offset, BTreeNode o) {
+    public static int saveNode(BTreeNode n) {
+        return writeAtOffset(-1, n);
+    }
+
+    public static BTreeNode loadNode(int byteAddress) {
+        return readAtOffset(byteAddress);
+    }
+
+    private static BTreeNode readLast() {
+        return readAtOffset(-1);
+    }
+
+    public static int writeAtOffset(long offset, BTreeNode o) {
         try {
             byte[] parentByte;
-            byte[][] treeObjectBytes; //First array is keys, second array is frequency, matched by index
+            byte[][] treeObjectBytes;
             byte[] childBytes;
+
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             if(offset == -1)
                 offset = raf.length();
             raf.seek(offset);
 
-            parentByte = ByteBuffer.allocate(4).putInt(o.getParent()).array();
-            treeObjectBytes = treeObjectToByte(o.getTreeObjects());
-            childBytes = intArrToByte(o.getChildPointers());
+            BTreeNode parent = o.getParent();
+            if (parent == null) {
+                parentByte = ByteBuffer.allocate(4).putInt(-1).array();
+            } else {
+                parentByte = ByteBuffer.allocate(4).putInt(o.getParent().getbyteOffset()).array();
+            }
 
-            raf.write(parentByte);          //Metadata is only parent for now
-            raf.write(treeObjectBytes[0]);  //Write our keys
-            raf.write(treeObjectBytes[1]);  //Write key frequencies
+            treeObjectBytes = treeObjectToByte(o.getTreeObjects());
+            childBytes = intArrToByte(o.getChildList());
+
+            if ((parentByte.length + treeObjectBytes[0].length + treeObjectBytes[1].length + childBytes.length)
+                != objSize) {
+                System.out.println("Unexpected node size, exiting.");
+                System.exit(0);
+            }
+
+            raf.write(parentByte);
+            raf.write(treeObjectBytes[0]);
+            raf.write(treeObjectBytes[1]);
             raf.write(childBytes);
-            return (raf.getFilePointer() - objSize);
+            raf.close();
+            return (int)offset;
         } catch (Exception e) {
             System.out.println(e);
         }
         return -1;
     }
 
-    public static BTreeNode readAt(long offset) {
+    public static BTreeNode readAtOffset(long offset) {
         try {
             byte[] parentByte = new byte[4];
-            byte[][] treeObjectBytes = new byte[2][]; //First array is keys, second array is frequency, matched by index
-            byte[] childrenBytes = new byte[4*(size+1)];
-            //TODO: Probably a way to do this on init?
-            treeObjectBytes[0] = new byte[8 * size];
-            treeObjectBytes[1] = new byte[4 * size];
+            byte[][] treeObjectBytes = new byte[2][];
+            treeObjectBytes[0] = new byte[8*MaxKeys];
+            treeObjectBytes[1] = new byte[4*MaxKeys];
+            byte[] childBytes = new byte[4*MaxChildren];
+
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             if (offset == -1)
                 offset = raf.length()-objSize;
-
             raf.seek(offset);
+
             raf.read(parentByte);
             raf.read(treeObjectBytes[0]);
             raf.read(treeObjectBytes[1]);
-            raf.read(childrenBytes);
-            int p = ByteBuffer.wrap(parentByte).getInt();
+            raf.read(childBytes);
+
+            if ((parentByte.length + treeObjectBytes[0].length + treeObjectBytes[1].length + childBytes.length)
+                    != objSize) {
+                System.out.println("Parent expected: 4");
+                System.out.println("Received:        "+parentByte.length);
+                System.out.println("TreeKey expected: "+MaxKeys*4);
+                System.out.println("Received:         "+treeObjectBytes[0].length);
+                System.out.println("TreeFreq expected: "+MaxKeys*4);
+                System.out.println("Received:          "+treeObjectBytes[1].length);
+                System.out.println("ChildLen expected: "+MaxChildren*4);
+                System.out.println("Received:          "+childBytes.length);
+                System.out.println("Unexpected node size, exiting.");
+                System.exit(0);
+            }
+
+            int parentAddr = ByteBuffer.wrap(parentByte).getInt();
             long[] keys = toLongArr(treeObjectBytes[0]);
             int[] freq = toIntArr(treeObjectBytes[1]);
-            int[] children = toIntArr(childrenBytes);
-            TreeObject[] tObjArr = new TreeObject[size];
+            int[] children = toIntArr(childBytes);
+
+            TreeObject[] tObjArr = new TreeObject[MaxKeys];
             for (int i = 0; keys[i] != 0; i++) {
                 tObjArr[i] = new TreeObject(keys[i], freq[i]);
             }
-            BTreeNode o = new BTreeNode(p, tObjArr, children);
-//            System.out.println(o.toString());
-            return o;
+            raf.close();
+            return new BTreeNode(parentAddr, tObjArr, children, (int)offset);
         } catch (Exception e) {
             System.out.println(e);
         }
         return null;
-    }
-
-    // -- // Private Methods // -- //
-
-    private static int calculateObjSize(int size) {
-        int objsize = 0;
-        objsize += 4;               //Parent pointer
-        objsize += size * 12;       //TreeNode Objects
-        objsize += (size+1) * 4;    //Children Pointers
-        return objsize;
     }
 
     //Convert out TreeObjects into usable byte arrays
@@ -162,8 +182,6 @@ public final class NodeStorage {
         intBuf.get(array);
         return array;
     }
-
-    //TODO: Object serialization is infinitely simpler, but we get node sizes about 3x larger than optimal
 
     private static byte[] serialize(Object obj) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

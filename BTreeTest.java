@@ -45,8 +45,8 @@ public class BTreeTest{
 		    
 		    if(result != null && objective.longValue()==result.longValue())
 		    	numSuccessfulSearches++;
-
-			System.out.print("\r"+numSuccessfulSearches+" of "+iterations+" searches successful");
+		
+		System.out.print("\r"+numSuccessfulSearches+" of "+iterations+" searches successful");
 		}
 
 		System.out.println();

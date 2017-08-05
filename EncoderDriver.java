@@ -1,58 +1,17 @@
-import com.sun.org.apache.xalan.internal.xsltc.dom.NodeSortRecord;
-
 import java.io.File;
 import java.util.Random; // for testing
 
 public class EncoderDriver {
 
 	public static void main(String[] args){
-		BTreeWithStorageTest(args[0]);
-		//readWriteTest(args[0]);
+		BTreeTester();
 		//encoderTest();
 		//fileParseTest(args[0]);
 	}
 
-	private static void BTreeWithStorageTest(String filepath) {
-		NodeStorage.setFile(filepath);
-		BTreeTest btt = new BTreeTest(5, 1000);
+	private static void BTreeTester() {
+		BTreeTest btt = new BTreeTest(5, 100);
 		btt.runBTreeTest();
-	}
-
-	private static void readWriteTest(String filepath) {
-		Random rand = new Random();
-		NodeStorage.setSize(5);
-		NodeStorage.setFile(filepath);
-		NodeStorage.setMetaData();
-		BTreeNode btn = new BTreeNode(5);
-		long l = rand.nextLong();
-		btn.insertKey(l);
-		btn.insertKey(l);
-		btn.insertKey(l);
-		l = rand.nextLong();
-		btn.insertKey(l);
-		btn.insertKey(l);
-		btn.insertKey(rand.nextLong());
-		System.out.println("Root Before Read/Write:");
-		System.out.println(btn.toString());
-		btn.setbyteOffset((int)NodeStorage.writeNext(btn));
-		BTreeNode btn2 = new BTreeNode(5, btn.getByteOffset());
-		btn2.insertKey(rand.nextLong());
-		btn2.insertKey(rand.nextLong());
-		btn2.setbyteOffset((int)NodeStorage.writeNext(btn2));
-		btn2.setParent(btn.getByteOffset());
-		btn.insertChild(btn2);
-		System.out.println("Child Before Read/Write:");
-		System.out.println(btn2.toString());
-		System.out.println();
-		System.out.println("Root After Read/Write:");
-		NodeStorage.readAt(btn.getByteOffset());
-		System.out.println("Child After Read/Write:");
-		NodeStorage.readAt(btn2.getByteOffset());
-		System.out.println("Call parent from child:");
-		NodeStorage.readAt(btn2.getParent());
-		System.out.println("Call child from parent:");
-		NodeStorage.readAt(btn.getChild(0));
-
 	}
 
 	private static void fileParseTest(String filepath) {
