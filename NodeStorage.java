@@ -43,7 +43,8 @@ public final class NodeStorage {
             raf.write(ByteBuffer.allocate(4).putInt(4).array());
             System.out.println(raf.getFilePointer());
         } catch (Exception e) {
-
+            System.out.println("It asplode");
+            System.exit(0);
         }
     }
 
@@ -108,7 +109,7 @@ public final class NodeStorage {
                 tObjArr[i] = new TreeObject(keys[i], freq[i]);
             }
             BTreeNode o = new BTreeNode(p, tObjArr, children);
-            System.out.println(o.toString());
+//            System.out.println(o.toString());
             return o;
         } catch (Exception e) {
             System.out.println(e);
@@ -133,7 +134,7 @@ public final class NodeStorage {
         ByteBuffer ibBuffer = ByteBuffer.allocate(arr.length * 4);
         LongBuffer longBuffer = lbBuffer.asLongBuffer();
         IntBuffer intBuffer = ibBuffer.asIntBuffer();
-        for (int i = 0; arr[i] != null; i++) {
+        for (int i = 0; i < arr.length-1 && arr[i] != null; i++) {
             longBuffer.put(arr[i].getKey());
             intBuffer.put(arr[i].getFrequency());
         }

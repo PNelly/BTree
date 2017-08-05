@@ -6,17 +6,15 @@ import java.util.Random; // for testing
 public class EncoderDriver {
 
 	public static void main(String[] args){
-		//BTreeWithStorageTest(args[0]);
-		readWriteTest(args[0]);
+		BTreeWithStorageTest(args[0]);
+		//readWriteTest(args[0]);
 		//encoderTest();
 		//fileParseTest(args[0]);
 	}
 
 	private static void BTreeWithStorageTest(String filepath) {
-		NodeStorage.setSize(5);
 		NodeStorage.setFile(filepath);
-		NodeStorage.setMetaData();
-		BTreeTest btt = new BTreeTest(5, 10000);
+		BTreeTest btt = new BTreeTest(5, 1000);
 		btt.runBTreeTest();
 	}
 

@@ -20,6 +20,8 @@ public class BTree {
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
+		NodeStorage.setSize(degree);
+		NodeStorage.setMetaData();
     }
 
     // -- // Public Methods // -- //
@@ -33,7 +35,8 @@ public class BTree {
     }
 
     public Long find(Long key){
-    	return recursiveSearch(key, root);
+    	//return recursiveSearch(key, root);
+		return searchTree(key, root);
     }
 
     public Long find(long key){
@@ -85,6 +88,21 @@ public class BTree {
 		updateNode(node);
     }
 
+	private Long searchTree(Long key, BTreeNode node) {
+		if (node == null)
+			return null;
+		Long objective;
+		while ((objective = node.findKey(key)) == null) {
+			node = loadNode(node.getChild(key));
+			if (node.isLeaf()) {
+				System.out.println("FUCK");
+				System.exit(-1);
+			}
+		}
+		return objective;
+	}
+
+	/*
     private Long recursiveSearch(Long key, BTreeNode node){
 
 		if(node == null)
@@ -98,6 +116,7 @@ public class BTree {
 		return recursiveSearch(key, loadNode(node.getChild(key)));
 
     }
+    */
 
 	private BTreeNode loadNode(int byteAddress) {
 		return NodeStorage.readAt(byteAddress);
@@ -110,7 +129,6 @@ public class BTree {
 	private void updateNode(BTreeNode n) {
 		//Make sure to update our offset in the event this is a new node we're inserting on
 		n.setbyteOffset((int)NodeStorage.writeAt(n.getByteOffset(), n));
-		System.out.println("Inserted at "+n.getByteOffset());
 	}
 
 }
