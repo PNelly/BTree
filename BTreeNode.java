@@ -202,7 +202,7 @@ public class BTreeNode {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Node Address: ");
+        sb.append("\nNode Address: ");
         sb.append(byteOffset);
         sb.append("\nParent Address: ");
         sb.append(parent);
@@ -213,7 +213,7 @@ public class BTreeNode {
             sb.append(keyList[i].getKey());
             sb.append("\n");
         }
-        sb.append("\nChildList: "+ Arrays.toString(childList));
+        sb.append("ChildList: "+ Arrays.toString(childList));
         return sb.toString();
     }
     
