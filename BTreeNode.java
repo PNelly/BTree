@@ -1,13 +1,14 @@
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class BTreeNode implements Serializable{
 
-    private int numKeys;
-    private int numChildren;
-    private TreeObject[] keyList;
-    private BTreeNode[] childList;
-    private BTreeNode parent;
-    private int biteOffset;
+    private int numKeys;            //Current number of keys in the node
+    private int numChildren;        //Current number of children in the node
+    private TreeObject[] keyList;   //Array holding TreeObjects with keys/frequency count
+    private BTreeNode[] childList;  //Array holding pointers to child BTreeNode Objects
+    private int parent;             //ByteOffset pointer to the parent
+    private int byteOffset;         //ByteOffset pointer to this node
 
     // -- // Constructors // -- //
     
@@ -18,7 +19,7 @@ public class BTreeNode implements Serializable{
         numChildren = 0;
     }
 
-    public BTreeNode(int size, BTreeNode  parent){
+    public BTreeNode(int size, int parent){
     	keyList = new TreeObject[size];
         childList = new BTreeNode[size +1];
         numKeys = 0;
@@ -26,17 +27,17 @@ public class BTreeNode implements Serializable{
         this.parent = parent;
     }
 
-    public BTreeNode(BTreeNode parent, TreeObject[] keys, BTreeNode[] children){
+    public BTreeNode(int parent, TreeObject[] keys, BTreeNode[] children){
         this.parent = parent;
         this.keyList = keys;
         this.childList = children;
         // catch up counters and reset parents
-		for(int i=0; i<keyList.length; i++){
+		for(int i=0; i < keyList.length; i++){
 		    if(keyList[i] != null) 
 		    	numKeys++;
-		    if(childList[i] != null){ 
+		    if(childList[i] != null){
 		    	numChildren++;
-		    	childList[i].setParent(this);
+		    	childList[i].setParent(byteOffset);
 		    }
 		}
 		if(childList[childList.length-1] != null) numChildren++;
@@ -58,7 +59,7 @@ public class BTreeNode implements Serializable{
     
     public int insertKey(Long t){
         int i = 0;
-        while( (i<numKeys) && (t > keyList[i].getKey().longValue())){
+        while( (i < numKeys) && (t > keyList[i].getKey().longValue())){
             i++;
         }
         numKeys++;
@@ -101,22 +102,26 @@ public class BTreeNode implements Serializable{
 
      	// -- // Getters and Setters // -- //
     
-    public BTreeNode getParent() {
+    public int getParent() {
         return parent;
     }
 
-    public void setParent(BTreeNode node){
-        parent = node;
+    public void setParent(int byteLocation){
+        parent = byteLocation;
     }
 
-    public void setBiteOffset(int i){
-        biteOffset = i;
+    public void setbyteOffset(int i){
+        byteOffset = i;
     }
 
-    public int getBiteOffset(){
-        return biteOffset;
+    public int getbyteOffset(){
+        return byteOffset;
     }
-    
+
+    public TreeObject[] getTreeObjects() {
+        return keyList;
+    }
+
     public Long getTreeObject(int i){
         if((i > numKeys) || (i < 0)){
             //error
@@ -160,6 +165,11 @@ public class BTreeNode implements Serializable{
             }
         }
         return null;
+    }
+
+    public String toString() {
+        return String.format("Parent Address: %d\nKeyList: %s\nChildList: %s\n",
+                parent, Arrays.toString(keyList), Arrays.toString(childList));
     }
     
     // -- // Private Methods // -- //
