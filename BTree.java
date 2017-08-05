@@ -13,7 +13,6 @@ public class BTree {
     private int degree;
     private int maxKeys;
     private BTreeNode root;
-	private NodeStoragePrototype nsp;
 
     // -- // Constructor // -- //
     
@@ -21,7 +20,6 @@ public class BTree {
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
-		nsp = new NodeStoragePrototype(5, "NotARealPath");
     }
 
     // -- // Public Methods // -- //
@@ -47,21 +45,29 @@ public class BTree {
     private void split(BTreeNode node){
 
 		BTreeNode parent, right;
-	    parent = loadNode(node.getParent());
+	    int pAddress = node.getParent();
 	
-		if(parent == null){
+		if(pAddress == -1){
 		    parent = new BTreeNode(maxKeys);
-		    node.setParent(parent.getbyteOffset());
+			parent.insertChild(node);
+			//TODO: Error handling for bad saves (return -1)
+			parent.setbyteOffset(saveNode(parent));
+		    node.setParent(parent.getByteOffset());
 		    root   = parent;
-		    parent.insertChild(node);
+
+		} else {
+			parent = loadNode(node.getParent());
 		}
 	
 		int medianKeyIndex = degree -1;
 		parent.insertKey(node.getTreeObject(medianKeyIndex));
-		right = new BTreeNode(parent.getbyteOffset(),
+		right = new BTreeNode(parent.getByteOffset(),
 				      node.rightOf(medianKeyIndex),
 				      node.getRightChildList(medianKeyIndex));
+		right.setbyteOffset(saveNode(right));
 		parent.insertChild(right);
+		updateNode(parent);
+		updateNode(node);
 
     }
 
@@ -73,10 +79,10 @@ public class BTree {
 		}
 	
 		if(!node.isLeaf())
-		    recursiveInsert(key, node.getChild(key));
+		    recursiveInsert(key, loadNode(node.getChild(key)));
 		else
 		    node.insertKey(key);
-
+		updateNode(node);
     }
 
     private Long recursiveSearch(Long key, BTreeNode node){
@@ -89,13 +95,22 @@ public class BTree {
 		if(objective != null)
 		    return objective;
 	
-		return recursiveSearch(key, node.getChild(key));
+		return recursiveSearch(key, loadNode(node.getChild(key)));
 
     }
 
-	//TODO: Gotta implement this
 	private BTreeNode loadNode(int byteAddress) {
-		return null;
+		return NodeStorage.readAt(byteAddress);
+	}
+
+	private int saveNode(BTreeNode n) {
+		return (int)NodeStorage.writeNext(n);
+	}
+
+	private void updateNode(BTreeNode n) {
+		//Make sure to update our offset in the event this is a new node we're inserting on
+		n.setbyteOffset((int)NodeStorage.writeAt(n.getByteOffset(), n));
+		System.out.println("Inserted at "+n.getByteOffset());
 	}
 
 }

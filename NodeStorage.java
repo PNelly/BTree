@@ -12,17 +12,21 @@ import java.nio.LongBuffer;
  * @author Michael Burke
  * CS321 Summer 2017
  */
-public class NodeStoragePrototype {
+public final class NodeStorage {
 
-    private int size;
-    private int objSize;
-    private long fileLength;
-    private File file;
+    private static int size;
+    private static int objSize;
+    private static long fileLength;
+    private static File file;
 
     // -- // Constructors // -- //
+    public static void setSize(int n) {
+        size = n;
+        objSize = calculateObjSize(size);
+        System.out.println(objSize);
+    }
 
-    public NodeStoragePrototype(int size, String filepath) {
-        this.size = size;
+    public static void setFile(String filepath) {
         try {
             file = new File(filepath);
         } catch (Exception e) {
@@ -30,23 +34,34 @@ public class NodeStoragePrototype {
             System.out.println("Exiting program...");
             System.exit(0);
         }
-        objSize = calculateObjSize(size);
+    }
+
+    public static void setMetaData() {
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
+            raf.seek(0);
+            raf.write(ByteBuffer.allocate(4).putInt(4).array());
+            System.out.println(raf.getFilePointer());
+        } catch (Exception e) {
+
+        }
     }
 
     // -- // Public Methods // -- //
 
-    public void writeNext(BTreeNode o) {
-        writeAtOffset(-1, o);
+    public static long writeNext(BTreeNode o) {
+        return writeAt(-1, o);
     }
 
-    public void readLast() {
-        readAtOffset(-1);
+    public static void readLast() {
+        readAt(-1);
     }
 
-    public void writeAtOffset(long offset, BTreeNode o) {
+    public static long writeAt(long offset, BTreeNode o) {
         try {
             byte[] parentByte;
             byte[][] treeObjectBytes; //First array is keys, second array is frequency, matched by index
+            byte[] childBytes;
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             if(offset == -1)
                 offset = raf.length();
@@ -54,25 +69,27 @@ public class NodeStoragePrototype {
 
             parentByte = ByteBuffer.allocate(4).putInt(o.getParent()).array();
             treeObjectBytes = treeObjectToByte(o.getTreeObjects());
+            childBytes = intArrToByte(o.getChildPointers());
+
             raf.write(parentByte);          //Metadata is only parent for now
             raf.write(treeObjectBytes[0]);  //Write our keys
             raf.write(treeObjectBytes[1]);  //Write key frequencies
-            //TODO: Need to convert childList in BTreeNode to byte references instead of obj references
-
-            fileLength = raf.length();
-            System.out.println(fileLength);
+            raf.write(childBytes);
+            return (raf.getFilePointer() - objSize);
         } catch (Exception e) {
             System.out.println(e);
         }
+        return -1;
     }
 
-    public BTreeNode readAtOffset(long offset) {
+    public static BTreeNode readAt(long offset) {
         try {
             byte[] parentByte = new byte[4];
             byte[][] treeObjectBytes = new byte[2][]; //First array is keys, second array is frequency, matched by index
+            byte[] childrenBytes = new byte[4*(size+1)];
             //TODO: Probably a way to do this on init?
             treeObjectBytes[0] = new byte[8 * size];
-            treeObjectBytes[1] = new byte[4 * (size+1)];
+            treeObjectBytes[1] = new byte[4 * size];
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             if (offset == -1)
                 offset = raf.length()-objSize;
@@ -81,14 +98,16 @@ public class NodeStoragePrototype {
             raf.read(parentByte);
             raf.read(treeObjectBytes[0]);
             raf.read(treeObjectBytes[1]);
+            raf.read(childrenBytes);
             int p = ByteBuffer.wrap(parentByte).getInt();
             long[] keys = toLongArr(treeObjectBytes[0]);
             int[] freq = toIntArr(treeObjectBytes[1]);
+            int[] children = toIntArr(childrenBytes);
             TreeObject[] tObjArr = new TreeObject[size];
             for (int i = 0; keys[i] != 0; i++) {
                 tObjArr[i] = new TreeObject(keys[i], freq[i]);
             }
-            BTreeNode o = new BTreeNode(p, tObjArr, null);
+            BTreeNode o = new BTreeNode(p, tObjArr, children);
             System.out.println(o.toString());
             return o;
         } catch (Exception e) {
@@ -99,17 +118,16 @@ public class NodeStoragePrototype {
 
     // -- // Private Methods // -- //
 
-    private int calculateObjSize(int size) {
+    private static int calculateObjSize(int size) {
         int objsize = 0;
         objsize += 4;               //Parent pointer
         objsize += size * 12;       //TreeNode Objects
-        //TODO: Include child pointers
-        //objsize += (size+1) * 4;    //Children Pointers
+        objsize += (size+1) * 4;    //Children Pointers
         return objsize;
     }
 
     //Convert out TreeObjects into usable byte arrays
-    private byte[][] treeObjectToByte(TreeObject[] arr) {
+    private static byte[][] treeObjectToByte(TreeObject[] arr) {
         //Two bytebuffers: One for our longs, one for our ints (key/freq, respectively)
         ByteBuffer lbBuffer = ByteBuffer.allocate(arr.length * 8);
         ByteBuffer ibBuffer = ByteBuffer.allocate(arr.length * 4);
@@ -122,7 +140,7 @@ public class NodeStoragePrototype {
         return new byte[][] {lbBuffer.array(), ibBuffer.array()};
     }
 
-    private byte[] intArrToByte(int[] data) {
+    private static byte[] intArrToByte(int[] data) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(data);
@@ -130,14 +148,14 @@ public class NodeStoragePrototype {
         return byteBuffer.array();
     }
 
-    private long[] toLongArr( byte[] bytes ) {
+    private static long[] toLongArr( byte[] bytes ) {
         LongBuffer longBuf = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).asLongBuffer();
         long[] array = new long[longBuf.remaining()];
         longBuf.get(array);
         return array;
     }
 
-    private int[] toIntArr( byte[] bytes ) {
+    private static int[] toIntArr( byte[] bytes ) {
         IntBuffer intBuf = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
         int[] array = new int[intBuf.remaining()];
         intBuf.get(array);
@@ -146,13 +164,13 @@ public class NodeStoragePrototype {
 
     //TODO: Object serialization is infinitely simpler, but we get node sizes about 3x larger than optimal
 
-    private byte[] serialize(Object obj) throws IOException {
+    private static byte[] serialize(Object obj) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(out);
         os.writeObject(obj);
         return out.toByteArray();
     }
-    private Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+    private static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
         ByteArrayInputStream in = new ByteArrayInputStream(data);
         ObjectInputStream is = new ObjectInputStream(in);
         return is.readObject();

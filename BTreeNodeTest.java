@@ -22,7 +22,7 @@ public class BTreeNodeTest {
         for(int j =  0; j < nodesize; j++){
             System.out.println("Print out of the keys of each object in child " + j + " of test node");
             for(int k = 0; k < nodesize; k++) {
-                System.out.println(node.getChild(j).getTreeObject(k));
+                //System.out.println(node.getChild(j).getTreeObject(k));
             }
             System.out.println();
         }

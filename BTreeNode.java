@@ -6,28 +6,30 @@ public class BTreeNode implements Serializable{
     private int numKeys;            //Current number of keys in the node
     private int numChildren;        //Current number of children in the node
     private TreeObject[] keyList;   //Array holding TreeObjects with keys/frequency count
-    private BTreeNode[] childList;  //Array holding pointers to child BTreeNode Objects
-    private int parent;             //ByteOffset pointer to the parent
+    private int[] childList;        //Array holding pointers to child BTreeNode Objects
+    private int parent;             //ByteOffset pointer to the parent. -1 indicates this the root node.
     private int byteOffset;         //ByteOffset pointer to this node
 
     // -- // Constructors // -- //
     
     public BTreeNode(int size){
     	keyList = new TreeObject[size];
-        childList = new BTreeNode[size+1];
+        childList = new int[size+1];
         numKeys = 0;
         numChildren = 0;
+        parent = -1; //We're a root!
+        byteOffset = -1; //Freshly made node, hasn't been saved yet
     }
 
     public BTreeNode(int size, int parent){
     	keyList = new TreeObject[size];
-        childList = new BTreeNode[size +1];
+        childList = new int[size +1];
         numKeys = 0;
         numChildren = 0;
         this.parent = parent;
     }
 
-    public BTreeNode(int parent, TreeObject[] keys, BTreeNode[] children){
+    public BTreeNode(int parent, TreeObject[] keys, int[] children){
         this.parent = parent;
         this.keyList = keys;
         this.childList = children;
@@ -35,16 +37,14 @@ public class BTreeNode implements Serializable{
 		for(int i=0; i < keyList.length; i++){
 		    if(keyList[i] != null)
 		    	numKeys++;
-            //TODO: Reimplement this when we can do better checks
-            /*
-		    if(childList[i] != null){
+		    if(childList[i] != 0){
 		    	numChildren++;
-		    	childList[i].setParent(byteOffset);
+                //Not sure what the purpose of this was when it was an obj ref?
+		    	//childList[i].setParent(byteOffset);
 		    }
-		    */
 		}
-        //TODO: Uncomment this when we can do better checks
-		//if(childList[childList.length-1] != null) numChildren++;
+        //One extra check since childList is 1 longer than keyList
+        if(childList[childList.length-1] != 0) numChildren++;
     }
     
     // -- // Public Methods // -- //
@@ -89,18 +89,23 @@ public class BTreeNode implements Serializable{
 
     public int insertChild(BTreeNode n){
         int i = 0;
-        while( (i<numKeys) && (n.getTreeObject(0) > keyList[i].getKey()) ){
+        while( (i < numKeys) && (n.getTreeObject(0) > keyList[i].getKey()) ){
          i++;
         }
         numChildren++;
+
+        //If we're past the edge of the keys, insert on the tail and return
         if(i == numKeys +1){
-            childList[i] = n;
+            childList[i] = n.getByteOffset();
             return i;
         }
+
+        //Otherwise shift everything to open to correct index for the child
         for(int j = numKeys; j > i; j--){
             childList[j] = childList[j-1];
         }
-        childList[i] = n;
+        //Insert and return
+        childList[i] = n.getByteOffset();
         return i;
     }
 
@@ -118,7 +123,7 @@ public class BTreeNode implements Serializable{
         byteOffset = i;
     }
 
-    public int getbyteOffset(){
+    public int getByteOffset(){
         return byteOffset;
     }
 
@@ -133,15 +138,18 @@ public class BTreeNode implements Serializable{
         return keyList[i].getKey();
     }
 
+    public int[] getChildPointers() {
+        return childList;
+    }
 
-    public BTreeNode getChild(int i){
+    public int getChild(int i){
         if((i > numKeys +1) || (i < 0)){
             //error
         }
         return childList[i];
     }
     
-    public BTreeNode getChild(Long key) {
+    public int getChild(Long key) {
 		int i=0;
 		while( (i<numKeys) && (key>keyList[i].getKey()) )
 		    i++;
@@ -155,8 +163,8 @@ public class BTreeNode implements Serializable{
         return l;
     }
     
-    public BTreeNode[] getRightChildList(int i) {
-        BTreeNode[] c = new BTreeNode[keyList.length+1];
+    public int[] getRightChildList(int i) {
+        int[] c = new int[keyList.length+1];
         System.arraycopy(childList,i+1,c,0,keyList.length/2+1);
         cleanRightChildren(i+1);
         return c;
@@ -198,8 +206,8 @@ public class BTreeNode implements Serializable{
 
     private void cleanRightChildren(int i){
 		for(int j = i; j<childList.length; j++){
-			if(childList[j]!=null){
-		        childList[j] = null;
+			if( childList[j] != -1){
+		        childList[j] = -1;
 		        numChildren--;
 			}
 		}
