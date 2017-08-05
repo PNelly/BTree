@@ -4,8 +4,30 @@ import java.util.Random; // for testing
 public class EncoderDriver {
 
 	public static void main(String[] args){
-		encoderTest();
+		readWriteTest(args[0]);
+		//encoderTest();
 		//fileParseTest(args[0]);
+	}
+
+	private static void readWriteTest(String filepath) {
+		Random rand = new Random();
+		NodeStoragePrototype nsp = new NodeStoragePrototype(5, filepath);
+		BTreeNode btn = new BTreeNode(5);
+		btn.setParent(10);
+		long l = rand.nextLong();
+		btn.insertKey(l);
+		btn.insertKey(l);
+		btn.insertKey(l);
+		l = rand.nextLong();
+		btn.insertKey(l);
+		btn.insertKey(l);
+		btn.insertKey(rand.nextLong());
+		System.out.println("Before Read/Write:");
+		System.out.println(btn.toString());
+		System.out.println();
+		System.out.println("After Read/Write:");
+		nsp.writeNext(btn);
+		nsp.readLast();
 	}
 
 	private static void fileParseTest(String filepath) {

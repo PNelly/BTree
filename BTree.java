@@ -13,6 +13,7 @@ public class BTree {
     private int degree;
     private int maxKeys;
     private BTreeNode root;
+	private NodeStoragePrototype nsp;
 
     // -- // Constructor // -- //
     
@@ -20,6 +21,7 @@ public class BTree {
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
+		nsp = new NodeStoragePrototype(5, "NotARealPath");
     }
 
     // -- // Public Methods // -- //
@@ -45,18 +47,18 @@ public class BTree {
     private void split(BTreeNode node){
 
 		BTreeNode parent, right;
-	    parent = node.getParent();
+	    parent = loadNode(node.getParent());
 	
 		if(parent == null){
 		    parent = new BTreeNode(maxKeys);
-		    node.setParent(parent);
+		    node.setParent(parent.getbyteOffset());
 		    root   = parent;
 		    parent.insertChild(node);
 		}
 	
 		int medianKeyIndex = degree -1;
 		parent.insertKey(node.getTreeObject(medianKeyIndex));
-		right = new BTreeNode(parent,
+		right = new BTreeNode(parent.getbyteOffset(),
 				      node.rightOf(medianKeyIndex),
 				      node.getRightChildList(medianKeyIndex));
 		parent.insertChild(right);
@@ -67,7 +69,7 @@ public class BTree {
 	
 		if(node.isFull()){
 		    split(node);
-		    node = node.getParent();
+		    node = loadNode(node.getParent());
 		}
 	
 		if(!node.isLeaf())
@@ -90,5 +92,10 @@ public class BTree {
 		return recursiveSearch(key, node.getChild(key));
 
     }
+
+	//TODO: Gotta implement this
+	private BTreeNode loadNode(int byteAddress) {
+		return null;
+	}
 
 }

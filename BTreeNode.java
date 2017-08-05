@@ -33,14 +33,18 @@ public class BTreeNode implements Serializable{
         this.childList = children;
         // catch up counters and reset parents
 		for(int i=0; i < keyList.length; i++){
-		    if(keyList[i] != null) 
+		    if(keyList[i] != null)
 		    	numKeys++;
+            //TODO: Reimplement this when we can do better checks
+            /*
 		    if(childList[i] != null){
 		    	numChildren++;
 		    	childList[i].setParent(byteOffset);
 		    }
+		    */
 		}
-		if(childList[childList.length-1] != null) numChildren++;
+        //TODO: Uncomment this when we can do better checks
+		//if(childList[childList.length-1] != null) numChildren++;
     }
     
     // -- // Public Methods // -- //
@@ -168,8 +172,19 @@ public class BTreeNode implements Serializable{
     }
 
     public String toString() {
-        return String.format("Parent Address: %d\nKeyList: %s\nChildList: %s\n",
-                parent, Arrays.toString(keyList), Arrays.toString(childList));
+        StringBuilder sb = new StringBuilder();
+        sb.append("Parent Address: ");
+        sb.append(parent);
+        sb.append("\n");
+        sb.append("KeyList: \n");
+        for (int i = 0; keyList[i] != null; i++) {
+            sb.append(keyList[i].getFrequency());
+            sb.append(" ");
+            sb.append(keyList[i].getKey());
+            sb.append("\n");
+        }
+        sb.append("\nChildList: "+Arrays.toString(childList));
+        return sb.toString();
     }
     
     // -- // Private Methods // -- //

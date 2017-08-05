@@ -2,14 +2,21 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 
 /**
- * Created by Moosejaw on 8/5/2017.
+ * Use RandomAccessFile to read and write NodeData to a file
+ * In the interest of optimizing size, we pull individual attributes and convert to bytes
+ * Object Serialization is far simpler, but gives about 3x the size desired per node
+ *
+ * @author Michael Burke
+ * CS321 Summer 2017
  */
 public class NodeStoragePrototype {
 
     private int size;
     private int objSize;
+    private long fileLength;
     private File file;
 
     // -- // Constructors // -- //
@@ -23,64 +30,97 @@ public class NodeStoragePrototype {
             System.out.println("Exiting program...");
             System.exit(0);
         }
+        objSize = calculateObjSize(size);
     }
 
     // -- // Public Methods // -- //
 
-    public void writeNext(String filepath, BTreeNode o) {
-        writeAtOffset(-1, filepath, o);
+    public void writeNext(BTreeNode o) {
+        writeAtOffset(-1, o);
     }
 
-    public void readLast(String filepath) {
-        readAtOffset(-1, filepath);
+    public void readLast() {
+        readAtOffset(-1);
     }
 
-    public void writeAtOffset(long offset, String filepath, BTreeNode o) {
+    public void writeAtOffset(long offset, BTreeNode o) {
         try {
-            byte[] b;
-            File f = new File(filepath);
-            RandomAccessFile raf = new RandomAccessFile(f, "rw");
+            byte[] parentByte;
+            byte[][] treeObjectBytes; //First array is keys, second array is frequency, matched by index
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
             if(offset == -1)
                 offset = raf.length();
-
-            b = ByteBuffer.allocate(4).putInt(o.getParent()).array();
             raf.seek(offset);
-            raf.write(b);
-            b = intArrToByte(o.getKeys());
-            raf.write(b);
-            b = intArrToByte(o.getChildren());
-            raf.write(b);
-            fileSize = raf.length();
+
+            parentByte = ByteBuffer.allocate(4).putInt(o.getParent()).array();
+            treeObjectBytes = treeObjectToByte(o.getTreeObjects());
+            raf.write(parentByte);          //Metadata is only parent for now
+            raf.write(treeObjectBytes[0]);  //Write our keys
+            raf.write(treeObjectBytes[1]);  //Write key frequencies
+            //TODO: Need to convert childList in BTreeNode to byte references instead of obj references
+
+            fileLength = raf.length();
+            System.out.println(fileLength);
         } catch (Exception e) {
             System.out.println(e);
         }
     }
 
-    public void readAtOffset(long offset, String filepath) {
+    public BTreeNode readAtOffset(long offset) {
         try {
-            byte[] b;
-            File f = new File(filepath);
-            RandomAccessFile raf = new RandomAccessFile(f, "rw");
+            byte[] parentByte = new byte[4];
+            byte[][] treeObjectBytes = new byte[2][]; //First array is keys, second array is frequency, matched by index
+            //TODO: Probably a way to do this on init?
+            treeObjectBytes[0] = new byte[8 * size];
+            treeObjectBytes[1] = new byte[4 * (size+1)];
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
             if (offset == -1)
                 offset = raf.length()-objSize;
+
             raf.seek(offset);
-            b = new byte[4];
-            raf.read(b);
-            int p = ByteBuffer.wrap(b).getInt();
-            b = new byte[20];
-            raf.read(b);
-            int[] k = toIntArr(b);
-            b = new byte[24];
-            raf.read(b);
-            int[] c = toIntArr(b);
-            BTreeNode o = new BTreeNode(p, k, c);
+            raf.read(parentByte);
+            raf.read(treeObjectBytes[0]);
+            raf.read(treeObjectBytes[1]);
+            int p = ByteBuffer.wrap(parentByte).getInt();
+            long[] keys = toLongArr(treeObjectBytes[0]);
+            int[] freq = toIntArr(treeObjectBytes[1]);
+            TreeObject[] tObjArr = new TreeObject[size];
+            for (int i = 0; keys[i] != 0; i++) {
+                tObjArr[i] = new TreeObject(keys[i], freq[i]);
+            }
+            BTreeNode o = new BTreeNode(p, tObjArr, null);
             System.out.println(o.toString());
+            return o;
         } catch (Exception e) {
             System.out.println(e);
         }
+        return null;
     }
 
     // -- // Private Methods // -- //
+
+    private int calculateObjSize(int size) {
+        int objsize = 0;
+        objsize += 4;               //Parent pointer
+        objsize += size * 12;       //TreeNode Objects
+        //TODO: Include child pointers
+        //objsize += (size+1) * 4;    //Children Pointers
+        return objsize;
+    }
+
+    //Convert out TreeObjects into usable byte arrays
+    private byte[][] treeObjectToByte(TreeObject[] arr) {
+        //Two bytebuffers: One for our longs, one for our ints (key/freq, respectively)
+        ByteBuffer lbBuffer = ByteBuffer.allocate(arr.length * 8);
+        ByteBuffer ibBuffer = ByteBuffer.allocate(arr.length * 4);
+        LongBuffer longBuffer = lbBuffer.asLongBuffer();
+        IntBuffer intBuffer = ibBuffer.asIntBuffer();
+        for (int i = 0; arr[i] != null; i++) {
+            longBuffer.put(arr[i].getKey());
+            intBuffer.put(arr[i].getFrequency());
+        }
+        return new byte[][] {lbBuffer.array(), ibBuffer.array()};
+    }
 
     private byte[] intArrToByte(int[] data) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
@@ -88,6 +128,13 @@ public class NodeStoragePrototype {
         intBuffer.put(data);
 
         return byteBuffer.array();
+    }
+
+    private long[] toLongArr( byte[] bytes ) {
+        LongBuffer longBuf = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).asLongBuffer();
+        long[] array = new long[longBuf.remaining()];
+        longBuf.get(array);
+        return array;
     }
 
     private int[] toIntArr( byte[] bytes ) {
