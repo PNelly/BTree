@@ -244,6 +244,12 @@ public final class NodeStorage {
         return null;
     }
 
+    public static int getRoot() throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(file, "rw");
+        raf.seek(0);
+        return raf.readInt();
+    }
+
     //Convert out TreeObjects into usable byte arrays
     private static byte[][] treeObjectToByte(TreeObject[] arr) {
         //Two bytebuffers: One for our longs, one for our ints (key/freq, respectively)
