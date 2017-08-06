@@ -4,8 +4,14 @@ import java.util.Random; // for testing
 public class EncoderDriver {
 
 	public static void main(String[] args){
-		encoderTest();
+		BTreeTester();
+		//encoderTest();
 		//fileParseTest(args[0]);
+	}
+
+	private static void BTreeTester() {
+		BTreeTest btt = new BTreeTest(5, 500);
+		btt.runBTreeTest();
 	}
 
 	private static void fileParseTest(String filepath) {

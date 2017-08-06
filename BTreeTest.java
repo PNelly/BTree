@@ -28,28 +28,40 @@ public class BTreeTest{
 
     public void runBTreeTest(){
 		long item;
-		
-		for(int i=0; i<iterations; i++){
-		    System.out.print("\rinsertion "+(i+1));
-		    //item = (long) RNG.nextInt(100);
-		    item = RNG.nextLong();
-		    tree.insert(item);
-		    insertedKeys.add(item);
-		}
-		
-		System.out.println();
-		
-		for(int i=0; i<iterations; i++){
-		    Long objective = insertedKeys.get(i);
-		    Long result    = tree.find(objective);
-		    
-		    if(result != null && objective.longValue()==result.longValue())
-		    	numSuccessfulSearches++;
-		
-		System.out.print("\r"+numSuccessfulSearches+" of "+iterations+" searches successful");
-		}
+		int i = 0;
+		try {
+			long startTime = System.nanoTime();
+			for (i = 0; i < iterations; i++) {
+				//System.out.println("insertion " + (i + 1));
+				//item = (long) RNG.nextInt(100);
+				item = RNG.nextLong();
+				tree.insert(item);
+				insertedKeys.add(item);
+				//tree.insert(i);
+				//insertedKeys.add((long)i);
+			}
+			//NodeStorage.dumpTree();
+			long endTime = System.nanoTime();
+			long duration = (endTime - startTime)/1000000;
+			System.out.println("Inserted "+iterations+" iterations in "+duration+"ms");
+			startTime = System.nanoTime();
+			for (i = 0; i < iterations; i++) {
+				Long objective = insertedKeys.get(i);
+				Long result = tree.find(objective);
 
-		System.out.println();
+				if (result != null && objective.longValue() == result.longValue())
+					numSuccessfulSearches++;
+
+				System.out.print("\r" + numSuccessfulSearches + " of " + iterations + " searches successful");
+			}
+			endTime = System.nanoTime();
+			duration = (endTime - startTime)/1000000;
+			System.out.println("Searched "+iterations+" iterations in "+duration+"ms");
+			System.out.println();
+		} catch (Exception e) {
+			System.out.println(i);
+			System.out.println(e);
+		}
     }
 
 

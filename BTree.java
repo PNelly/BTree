@@ -20,12 +20,13 @@ public class BTree {
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
+		NodeStorage.setConfig(degree, "C:\\Users\\T\\Desktop\\BTree\\test");
     }
 
     // -- // Public Methods // -- //
     
     public void insert(Long key){
-    	recursiveInsert(key, root);
+    		recursiveInsert(key, root);
     }
 
     public void insert(long key){
@@ -42,38 +43,54 @@ public class BTree {
 
     // -- // Private Methods // -- //
 
-    private void split(BTreeNode node){
+	//On split we want to reassign to the new parent node, so return that
+    private BTreeNode split(BTreeNode node){
 
 		BTreeNode parent, right;
 	    parent = node.getParent();
 	
 		if(parent == null){
 		    parent = new BTreeNode(maxKeys);
+			parent.insertChild(node);
+			//parent.setbyteOffset(NodeStorage.saveNode(parent));
+            parent.setbyteOffset(NodeStorage.nextWritePos());
 		    node.setParent(parent);
 		    root   = parent;
-		    parent.insertChild(node);
 		}
 	
 		int medianKeyIndex = degree -1;
 		parent.insertKey(node.getTreeObject(medianKeyIndex));
-		right = new BTreeNode(parent,
+		right = new BTreeNode(parent.getbyteOffset(),
 				      node.rightOf(medianKeyIndex),
-				      node.getRightChildList(medianKeyIndex));
+				      node.getRightChildList(medianKeyIndex),
+				      NodeStorage.nextWritePos()+NodeStorage.getNodeSize());
+		NodeStorage.saveNode(right);
+		right.equals(NodeStorage.loadNode(right.getbyteOffset()));
 		parent.insertChild(right);
+		NodeStorage.updateNode(node);
+		NodeStorage.updateNode(parent);
+		if(root.getbyteOffset() == parent.getbyteOffset()) {
+			NodeStorage.setRootLocation(root.getbyteOffset());
+			root = parent;
+		}
+		NodeStorage.updateChildren(right.getChildList(), right.getbyteOffset());
 
+		return parent;
     }
 
     private void recursiveInsert(Long key, BTreeNode node){
 	
 		if(node.isFull()){
-		    split(node);
-		    node = node.getParent();
+		    node = split(node);
+		    //node = node.getParent();
 		}
 	
 		if(!node.isLeaf())
 		    recursiveInsert(key, node.getChild(key));
-		else
-		    node.insertKey(key);
+		else {
+			node.insertKey(key);
+			NodeStorage.updateNode(node);
+		}
 
     }
 
