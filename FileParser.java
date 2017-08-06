@@ -12,22 +12,33 @@ import java.io.FileReader;
 public class FileParser {
 
     private int sequenceLength;
+    private int degree;
+    private BTree btree;
+    private Encoder encoder;
+    private String gbkFilename;
+    private File gbkFile;
+    private int numInsertions;
+    
 
-    public FileParser(int sequenceLength) {
-        this.sequenceLength = sequenceLength;
+    public FileParser(int degree, String gbkFilename, int sequenceLength) {
+	this.degree = degree;
+	this.gbkFilename = gbkFilename;
+    this.sequenceLength = sequenceLength;
+	gbkFile = new File(gbkFilename);
+	encoder = new Encoder(sequenceLength);
+	btree = new BTree(degree);
+	numInsertions = 0;
+	getSequences(gbkFile);
     }
 
-    //TODO: Send the sequence off somewhere? We didnt discuss flow control really.
     public void getSequences(File f) {
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-            Encoder e = new Encoder(sequenceLength);
             String line, sequence;
             line = br.readLine();
             while(line != null) {
                 while (!line.trim().equals("ORIGIN")) {
                     line = br.readLine();
 
-                    //Probably a cleaner way to break out at EOF
                     if (line == null)
                         return;
                 }
@@ -37,14 +48,21 @@ public class FileParser {
                 while (line.charAt(line.length() - 1) != '/') {
                     line = line.replaceAll("[^gatc]", "");
                     for (int i = 0; i <= line.length() - sequenceLength; i++) {
+                    	
                         sequence = line.substring(i, i + sequenceLength);
-                        System.out.println(sequence);
-                        //TODO: Send the sequence off somewhere
+                        btree.insert( encoder.encode(sequence) );
+                        
+                        numInsertions++;
+                        if(System.currentTimeMillis() % 10 == 0){
+                        	System.out.print("\r"+numInsertions+" sequences inserted");
+                        }
                     }
                     line = line.substring(line.length() - sequenceLength + 1) + br.readLine();
+                    
                 }
             }
             br.close();
+            System.out.println();
         } catch (Exception e) {
             System.out.println(e);
         }

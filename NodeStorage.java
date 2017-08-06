@@ -79,7 +79,7 @@ public final class NodeStorage {
     }
 
     public static void dumpTree() {
-        File f = new File("C:\\Users\\T\\Desktop\\BTree\\dump");
+        File f = new File("/Users/patdoudy/Desktop/School/cs321/Assignment4BKP/src/treeDump");
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
             for(int i = 4; i < file.length(); i += objSize) {
                 bw.write(readAtOffset(i).toString());
@@ -240,6 +240,7 @@ public final class NodeStorage {
             return new BTreeNode(parentAddr, tObjArr, children, (int)offset);
         } catch (Exception e) {
             System.out.println(e);
+            e.printStackTrace();
         }
         return null;
     }
