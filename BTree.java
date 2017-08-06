@@ -54,7 +54,7 @@ public class BTree {
 			parent.insertChild(node);
 			//parent.setbyteOffset(NodeStorage.saveNode(parent));
             parent.setbyteOffset(NodeStorage.nextWritePos());
-		    node.setParent(parent);
+		    node.setParent(parent.getbyteOffset());
 		    root   = parent;
 		}
 	
@@ -64,16 +64,17 @@ public class BTree {
 				      node.rightOf(medianKeyIndex),
 				      node.getRightChildList(medianKeyIndex),
 				      NodeStorage.nextWritePos()+NodeStorage.getNodeSize());
-		NodeStorage.saveNode(right);
-		right.equals(NodeStorage.loadNode(right.getbyteOffset()));
+		//NodeStorage.saveNode(right);
+		//right.equals(NodeStorage.loadNode(right.getbyteOffset()));
 		parent.insertChild(right);
-		NodeStorage.updateNode(node);
-		NodeStorage.updateNode(parent);
+		//NodeStorage.updateNode(node);
+		//NodeStorage.updateNode(parent);
 		if(root.getbyteOffset() == parent.getbyteOffset()) {
 			NodeStorage.setRootLocation(root.getbyteOffset());
 			root = parent;
 		}
-		NodeStorage.updateChildren(right.getChildList(), right.getbyteOffset());
+		NodeStorage.saveManyNodes(new BTreeNode[] {node, parent, right}, right.getChildList(), right.getbyteOffset());
+		//NodeStorage.updateChildren(right.getChildList(), right.getbyteOffset());
 
 		return parent;
     }

@@ -129,6 +129,10 @@ public class BTreeNode {
         return NodeStorage.loadNode(parent);
     }
 
+    public void setParent(int parentByte) {
+        parent = parentByte;
+    }
+
     public void setParent(BTreeNode node){
         parent = node.getbyteOffset();
     }
