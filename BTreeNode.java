@@ -266,11 +266,13 @@ public class BTreeNode {
         sb.append("\nParent Address: ");
         sb.append(parent);
         sb.append("\nKeyList: \n");
-        for (int i = 0; keyList[i] != null; i++) {
-            sb.append(keyList[i].getFrequency());
-            sb.append(" ");
-            sb.append(keyList[i].getKey());
-            sb.append("\n");
+        for(int i=0; i<keyList.length;i++){
+        	if(keyList[i]!=null){
+	            sb.append(keyList[i].getFrequency());
+	            sb.append(" ");
+	            sb.append(keyList[i].getKey());
+	            sb.append("\n");
+        	}
         }
         sb.append("ChildList: "+ Arrays.toString(childList));
         return sb.toString();

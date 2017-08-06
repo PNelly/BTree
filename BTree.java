@@ -20,7 +20,7 @@ public class BTree {
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
-		NodeStorage.setConfig(degree, "C:\\Users\\T\\Desktop\\BTree\\test");
+		NodeStorage.setConfig(degree, "/Users/patdoudy/Desktop/School/cs321/Assignment4BKP/src/treeFile");
     }
 
     // -- // Public Methods // -- //
