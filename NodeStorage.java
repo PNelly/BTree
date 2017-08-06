@@ -19,6 +19,10 @@ public final class NodeStorage {
             setMetaData();
     }
 
+    public static int getNodeSize() {
+        return objSize;
+    }
+
     public static int nodeSize(int degree) {
         MaxKeys = (degree*2)-1;
         MaxChildren = degree*2;
@@ -105,6 +109,52 @@ public final class NodeStorage {
             raf.close();
         } catch (Exception e) {
             System.out.println("Error updating children!" + e);
+        }
+    }
+
+    public static void saveManyNodes(BTreeNode[] bNodes, int[] children, int newParent) {
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
+            byte[] parentByte;
+            byte[][] treeObjectBytes;
+            byte[] childBytes;
+            long offset;
+            for (BTreeNode bNode : bNodes) {
+                if(bNode.getbyteOffset() == -1)
+                    offset = raf.length();
+                else
+                    offset = bNode.getbyteOffset();
+                raf.seek(offset);
+
+                parentByte = ByteBuffer.allocate(4).putInt(bNode.getParentByte()).array();
+
+
+                treeObjectBytes = treeObjectToByte(bNode.getTreeObjects());
+                childBytes = intArrToByte(bNode.getChildList());
+
+                if ((parentByte.length + treeObjectBytes[0].length + treeObjectBytes[1].length + childBytes.length)
+                        != objSize) {
+                    System.out.println("Unexpected node size, exiting.");
+                    System.exit(0);
+                }
+
+                raf.write(parentByte);
+                raf.write(treeObjectBytes[0]);
+                raf.write(treeObjectBytes[1]);
+                raf.write(childBytes);
+            }
+
+            if (children != null) {
+                byte[] pByte = ByteBuffer.allocate(4).putInt(newParent).array();
+                for (int child : children) {
+                    if (child != -1) {
+                        raf.seek(child);
+                        raf.write(pByte);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error writing multiple nodes!" + e);
         }
     }
 
