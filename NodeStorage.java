@@ -150,8 +150,10 @@ public final class NodeStorage {
             int[] children = toIntArr(childBytes);
 
             TreeObject[] tObjArr = new TreeObject[MaxKeys];
-            for (int i = 0; keys[i] != 0; i++) {
-                tObjArr[i] = new TreeObject(keys[i], freq[i]);
+            for (int i = 0; i < keys.length; i++) {
+                if (keys[i] != 0) {
+                    tObjArr[i] = new TreeObject(keys[i], freq[i]);
+                }
             }
             raf.close();
             return new BTreeNode(parentAddr, tObjArr, children, (int)offset);
@@ -168,7 +170,7 @@ public final class NodeStorage {
         ByteBuffer ibBuffer = ByteBuffer.allocate(arr.length * 4);
         LongBuffer longBuffer = lbBuffer.asLongBuffer();
         IntBuffer intBuffer = ibBuffer.asIntBuffer();
-        for (int i = 0; i < arr.length-1 && arr[i] != null; i++) {
+        for (int i = 0; i < arr.length && arr[i] != null; i++) {
             longBuffer.put(arr[i].getKey());
             intBuffer.put(arr[i].getFrequency());
         }

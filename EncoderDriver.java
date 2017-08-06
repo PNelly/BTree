@@ -10,7 +10,7 @@ public class EncoderDriver {
 	}
 
 	private static void BTreeTester() {
-		BTreeTest btt = new BTreeTest(2, 100);
+		BTreeTest btt = new BTreeTest(2, 50);
 		btt.runBTreeTest();
 	}
 

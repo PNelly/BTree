@@ -65,6 +65,7 @@ public class BTree {
 				      node.getRightChildList(medianKeyIndex),
 				      NodeStorage.nextWritePos());
 		NodeStorage.saveNode(right);
+		NodeStorage.updateNode(node);
 		parent.insertChild(right);
 		NodeStorage.updateNode(parent);
 		return parent;

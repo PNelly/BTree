@@ -28,28 +28,33 @@ public class BTreeTest{
 
     public void runBTreeTest(){
 		long item;
-		
-		for(int i=0; i<iterations; i++){
-		    System.out.print("\rinsertion "+(i+1));
-		    //item = (long) RNG.nextInt(100);
-		    item = RNG.nextLong();
-		    tree.insert(item);
-		    insertedKeys.add(item);
-		}
-		NodeStorage.dumpTree();
-		System.out.println();
-		
-		for(int i=0; i<iterations; i++){
-		    Long objective = insertedKeys.get(i);
-		    Long result    = tree.find(objective);
-		    
-		    if(result != null && objective.longValue()==result.longValue())
-		    	numSuccessfulSearches++;
-		
-		System.out.print("\r"+numSuccessfulSearches+" of "+iterations+" searches successful");
-		}
+		int i = 0;
+		try {
+			for (i = 0; i < iterations; i++) {
+				System.out.print("\rinsertion " + (i + 1));
+				//item = (long) RNG.nextInt(100);
+				item = RNG.nextLong();
+				tree.insert(item);
+				insertedKeys.add(item);
+			}
+			NodeStorage.dumpTree();
+			System.out.println();
 
-		System.out.println();
+			for (i = 0; i < iterations; i++) {
+				Long objective = insertedKeys.get(i);
+				Long result = tree.find(objective);
+
+				if (result != null && objective.longValue() == result.longValue())
+					numSuccessfulSearches++;
+
+				System.out.print("\r" + numSuccessfulSearches + " of " + iterations + " searches successful");
+			}
+
+			System.out.println();
+		} catch (Exception e) {
+			System.out.println(i);
+			System.out.println(e);
+		}
     }
 
 
