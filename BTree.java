@@ -52,8 +52,8 @@ public class BTree {
 		if(parent == null){
 		    parent = new BTreeNode(maxKeys);
 			parent.insertChild(node);
-			//parent.setbyteOffset(NodeStorage.saveNode(parent));
-            parent.setbyteOffset(NodeStorage.nextWritePos());
+			parent.setbyteOffset(NodeStorage.saveNode(parent));
+            //parent.setbyteOffset(NodeStorage.nextWritePos());
 		    node.setParent(parent);
 		    root   = parent;
 		}
@@ -63,7 +63,7 @@ public class BTree {
 		right = new BTreeNode(parent.getbyteOffset(),
 				      node.rightOf(medianKeyIndex),
 				      node.getRightChildList(medianKeyIndex),
-				      NodeStorage.nextWritePos()+NodeStorage.getNodeSize());
+				      NodeStorage.nextWritePos());
 		NodeStorage.saveNode(right);
 		right.equals(NodeStorage.loadNode(right.getbyteOffset()));
 		parent.insertChild(right);
