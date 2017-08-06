@@ -18,6 +18,8 @@ public class BTreeNode {
         numChildren = 0;
         parent = -1;      //We're root
         byteOffset = -1;    //Has yet to be determined
+        setAllNegative(childList);
+        setAllNegative(keyList);
     }
 
     public BTreeNode(int size, int parent){
@@ -25,6 +27,8 @@ public class BTreeNode {
         childList = new int[size +1];
         numKeys = 0;
         numChildren = 0;
+        setAllNegative(childList);
+        setAllNegative(keyList);
         this.parent = parent;
     }
 
@@ -37,11 +41,11 @@ public class BTreeNode {
 		for(int i=0; i<keyList.length; i++){
 		    if(keyList[i] != null) 
 		    	numKeys++;
-		    if(childList[i] != 0){
+		    if(childList[i] != -1){
 		    	numChildren++;
 		    }
 		}
-		if(childList[childList.length-1] != 0) numChildren++;
+		if(childList[childList.length-1] != -1) numChildren++;
     }
     
     // -- // Public Methods // -- //
@@ -56,31 +60,37 @@ public class BTreeNode {
        return(numKeys == keyList.length);
    }
 
+   public int numKeys() { return numKeys; }
+
     	// -- // Insertions // -- //
     
     public int insertKey(Long t){
-        int i = 0;
-        while( (i<numKeys) && (t > keyList[i].getKey().longValue())){
-            i++;
-        }
-        numKeys++;
-        if(keyList[i] == null){
-        	keyList[i] = new TreeObject(t);
-            return i;
-        } else {
-        	// handle duplicates
-            if(t == keyList[i].getKey().longValue()){
-            	keyList[i].incrementFrequency();
-            	numKeys--;
-            	return i;
-            }
-        }
-        for(int j = numKeys-1; j > i; j--){
-            keyList[j] =keyList[j-1];
-        }
-        keyList[i] = new TreeObject(t);
-        return i;
-        
+       try {
+           int i = 0;
+           while ((i < numKeys) && (t > keyList[i].getKey().longValue())) {
+               i++;
+           }
+           numKeys++;
+           if (keyList[i] == null) {
+               keyList[i] = new TreeObject(t);
+               return i;
+           } else {
+               // handle duplicates
+               if (t == keyList[i].getKey().longValue()) {
+                   keyList[i].incrementFrequency();
+                   numKeys--;
+                   return i;
+               }
+           }
+           for (int j = numKeys - 1; j > i; j--) {
+               keyList[j] = keyList[j - 1];
+           }
+           keyList[i] = new TreeObject(t);
+           return i;
+       } catch (Exception e) {
+           System.out.println("Crashed inserting a key" + e);
+       }
+       return -1;
     }
 
 
@@ -107,7 +117,11 @@ public class BTreeNode {
     }
 
      	// -- // Getters and Setters // -- //
-    
+
+    public int getParentByte() {
+        return parent;
+    }
+
     public BTreeNode getParent() {
         if (parent == -1)
             return null; //We're the root
@@ -170,6 +184,8 @@ public class BTreeNode {
         int[] c = new int[keyList.length+1];
         System.arraycopy(childList,i+1,c,0,keyList.length/2+1);
         cleanRightChildren(i+1);
+        for(i = keyList.length/2+1; i < c.length; i++)
+            c[i] = -1;
         return c;
     }
 
@@ -183,7 +199,20 @@ public class BTreeNode {
     }
     
     // -- // Private Methods // -- //
-    
+
+    private void setAllNegative(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = -1;
+        }
+    }
+
+    private void setAllNegative(TreeObject[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] != null)
+                arr[i].setKey(-1);
+        }
+    }
+
     private void cleanRightKeys(int i){
 		for(int j = i; j<keyList.length; j++){
 		    keyList[j] = null;
@@ -193,11 +222,41 @@ public class BTreeNode {
 
     private void cleanRightChildren(int i){
 		for(int j = i; j<childList.length; j++){
-			if(childList[j] != 0){
-		        childList[j] = 0;
+			if(childList[j] != -1){
+		        childList[j] = -1;
 		        numChildren--;
 			}
 		}
+    }
+
+
+    public boolean equals(BTreeNode n) {
+        if (byteOffset != n.getbyteOffset()) {
+            System.out.println("Byte offset does not match!");
+            return false;
+        }
+        if (parent != n.getParentByte()) {
+            System.out.println("Parent does not match!");
+            return false;
+        }
+        if (numKeys != n.numKeys) {
+            System.out.println("numKey mismatch");
+            return false;
+        }
+        for (int i = 0; i < keyList.length && keyList[i] != null; i++) {
+            if(n.findKey(keyList[i].getKey()) != keyList[i].getKey()) {
+                System.out.println("Couldn't find key: "+keyList[i].getKey());
+                return false;
+            }
+        }
+        int[] nChild = n.getChildList();
+        for (int i = 0; i < childList.length; i++) {
+            if (nChild[i] != childList[i]) {
+                System.out.println("Child mismatch on index: "+i);
+                return false;
+            }
+        }
+        return true;
     }
 
     public String toString() {

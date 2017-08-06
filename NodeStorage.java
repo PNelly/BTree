@@ -9,6 +9,7 @@ public final class NodeStorage {
     private static int objSize;
     private static int MaxKeys;
     private static int MaxChildren;
+    private static int rootLocation;
     private static File file;
 
     public static void setConfig(int degree, String filepath) {
@@ -28,8 +29,17 @@ public final class NodeStorage {
         return objSize;
     }
 
+    public static void setRootLocation(int n) {
+        rootLocation = n;
+    }
+
+    public static int getRootLocation() {
+        return rootLocation;
+    }
+
     private static void setMetaData() {
         try {
+            rootLocation = 4;
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             raf.seek(0);
             raf.write(ByteBuffer.allocate(4).putInt(4).array());
@@ -45,10 +55,19 @@ public final class NodeStorage {
 
     public static void updateNode(BTreeNode n) {
         writeAtOffset(n.getbyteOffset(), n);
+        if (!n.equals(loadNode(n.getbyteOffset()))) {
+            System.out.println("Not equal after update!");
+        }
     }
 
     public static int saveNode(BTreeNode n) {
-        return writeAtOffset(-1, n);
+        int newoffset = writeAtOffset(-1, n);
+        n.setbyteOffset(newoffset);
+        if (!n.equals(readLast())) {
+            System.out.println("Not equal after save!");
+        };
+        return newoffset;
+
     }
 
     public static BTreeNode loadNode(int byteAddress) {
@@ -56,7 +75,7 @@ public final class NodeStorage {
     }
 
     public static void dumpTree() {
-        File f = new File("C:\\Users\\Moosejaw\\Desktop\\BTree\\dump");
+        File f = new File("C:\\Users\\T\\Desktop\\BTree\\dump");
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
             for(int i = 4; i < file.length(); i += objSize) {
                 bw.write(readAtOffset(i).toString());
@@ -73,6 +92,22 @@ public final class NodeStorage {
         return readAtOffset(-1);
     }
 
+    public static void updateChildren(int[] children, int newParent) {
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
+            byte[] pByte = ByteBuffer.allocate(4).putInt(newParent).array();
+            for (int child : children) {
+                if (child != -1) {
+                    raf.seek(child);
+                    raf.write(pByte);
+                }
+            }
+            raf.close();
+        } catch (Exception e) {
+            System.out.println("Error updating children!" + e);
+        }
+    }
+
     public static int writeAtOffset(long offset, BTreeNode o) {
         try {
             byte[] parentByte;
@@ -84,12 +119,8 @@ public final class NodeStorage {
                 offset = raf.length();
             raf.seek(offset);
 
-            BTreeNode parent = o.getParent();
-            if (parent == null) {
-                parentByte = ByteBuffer.allocate(4).putInt(-1).array();
-            } else {
-                parentByte = ByteBuffer.allocate(4).putInt(o.getParent().getbyteOffset()).array();
-            }
+            parentByte = ByteBuffer.allocate(4).putInt(o.getParentByte()).array();
+
 
             treeObjectBytes = treeObjectToByte(o.getTreeObjects());
             childBytes = intArrToByte(o.getChildList());
@@ -151,7 +182,7 @@ public final class NodeStorage {
 
             TreeObject[] tObjArr = new TreeObject[MaxKeys];
             for (int i = 0; i < keys.length; i++) {
-                if (keys[i] != 0) {
+                if (keys[i] != -1) {
                     tObjArr[i] = new TreeObject(keys[i], freq[i]);
                 }
             }
@@ -170,9 +201,14 @@ public final class NodeStorage {
         ByteBuffer ibBuffer = ByteBuffer.allocate(arr.length * 4);
         LongBuffer longBuffer = lbBuffer.asLongBuffer();
         IntBuffer intBuffer = ibBuffer.asIntBuffer();
-        for (int i = 0; i < arr.length && arr[i] != null; i++) {
-            longBuffer.put(arr[i].getKey());
-            intBuffer.put(arr[i].getFrequency());
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] != null) {
+                longBuffer.put(arr[i].getKey());
+                intBuffer.put(arr[i].getFrequency());
+            } else {
+                longBuffer.put(-1);
+                intBuffer.put(-1);
+            }
         }
         return new byte[][] {lbBuffer.array(), ibBuffer.array()};
     }

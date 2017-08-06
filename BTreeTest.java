@@ -31,11 +31,13 @@ public class BTreeTest{
 		int i = 0;
 		try {
 			for (i = 0; i < iterations; i++) {
-				System.out.print("\rinsertion " + (i + 1));
+				System.out.println("insertion " + (i + 1));
 				//item = (long) RNG.nextInt(100);
 				item = RNG.nextLong();
-				tree.insert(item);
-				insertedKeys.add(item);
+				//tree.insert(item);
+				//insertedKeys.add(item);
+				tree.insert(i);
+				insertedKeys.add((long)i);
 			}
 			NodeStorage.dumpTree();
 			System.out.println();

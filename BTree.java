@@ -20,13 +20,13 @@ public class BTree {
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
-		NodeStorage.setConfig(degree, "C:\\Users\\Moosejaw\\Desktop\\BTree\\test");
+		NodeStorage.setConfig(degree, "C:\\Users\\T\\Desktop\\BTree\\test");
     }
 
     // -- // Public Methods // -- //
     
     public void insert(Long key){
-    	recursiveInsert(key, root);
+    		recursiveInsert(key, root);
     }
 
     public void insert(long key){
@@ -54,7 +54,6 @@ public class BTree {
 			parent.insertChild(node);
 			parent.setbyteOffset(NodeStorage.saveNode(parent));
 		    node.setParent(parent);
-			NodeStorage.updateNode(node);
 		    root   = parent;
 		}
 	
@@ -65,9 +64,16 @@ public class BTree {
 				      node.getRightChildList(medianKeyIndex),
 				      NodeStorage.nextWritePos());
 		NodeStorage.saveNode(right);
-		NodeStorage.updateNode(node);
+		right.equals(NodeStorage.loadNode(right.getbyteOffset()));
 		parent.insertChild(right);
+		NodeStorage.updateNode(node);
 		NodeStorage.updateNode(parent);
+		if(root.getbyteOffset() == parent.getbyteOffset()) {
+			NodeStorage.setRootLocation(root.getbyteOffset());
+			root = parent;
+		}
+		NodeStorage.updateChildren(right.getChildList(), right.getbyteOffset());
+
 		return parent;
     }
 
