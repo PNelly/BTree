@@ -130,8 +130,11 @@ public class Cache {
     public void dumpNodesToFile() {
         Node node = head;
         ArrayList<BTreeNode> bNodeList = new ArrayList<BTreeNode>();
-        while(node.getNext() != null)
+        while(node.getNext() != null) {
             bNodeList.add(node.getValue());
+            node = node.getNext();
+        }
+
         bNodeList.add(tail.getValue());
         NodeStorage.dumpNodes(bNodeList.toArray(new BTreeNode[bNodeList.size()]));
     }

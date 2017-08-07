@@ -52,7 +52,7 @@ public class CacheManager {
     }
 
     public void dumpCacheToFile() {
-
+        cache.dumpNodesToFile();
     }
 
     /**

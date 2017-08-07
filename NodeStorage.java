@@ -175,8 +175,6 @@ public final class NodeStorage {
                     raf.seek(offset);
 
                     parentByte = ByteBuffer.allocate(4).putInt(bNode.getParentByte()).array();
-
-
                     treeObjectBytes = treeObjectToByte(bNode.getTreeObjects());
                     childBytes = intArrToByte(bNode.getChildList());
 
@@ -207,7 +205,7 @@ public final class NodeStorage {
         }
     }
 
-    public static int writeAtOffset(long offset, BTreeNode o) {
+    public static int writeAtOffset(long offset, BTreeNode bNode) {
         try {
             byte[] parentByte;
             byte[][] treeObjectBytes;
@@ -218,11 +216,9 @@ public final class NodeStorage {
                 offset = raf.length();
             raf.seek(offset);
 
-            parentByte = ByteBuffer.allocate(4).putInt(o.getParentByte()).array();
-
-
-            treeObjectBytes = treeObjectToByte(o.getTreeObjects());
-            childBytes = intArrToByte(o.getChildList());
+            parentByte = ByteBuffer.allocate(4).putInt(bNode.getParentByte()).array();
+            treeObjectBytes = treeObjectToByte(bNode.getTreeObjects());
+            childBytes = intArrToByte(bNode.getChildList());
 
             if ((parentByte.length + treeObjectBytes[0].length + treeObjectBytes[1].length + childBytes.length)
                 != objSize) {
