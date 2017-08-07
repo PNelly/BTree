@@ -129,7 +129,9 @@ public class Cache {
 
     public void dumpNodesToFile() {
         Node node = head;
-        ArrayList<BTreeNode> bNodeList = new ArrayList<BTreeNode>();
+        if (head == null) //Condition for if the file never had a sequence
+            return;
+        ArrayList<BTreeNode> bNodeList = new ArrayList<>();
         while(node.getNext() != null) {
             bNodeList.add(node.getValue());
             node = node.getNext();
