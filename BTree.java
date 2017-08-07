@@ -23,7 +23,6 @@ public class BTree {
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
-		NodeStorage.setConfig(degree, "C:\\Users\\T\\Desktop\\BTree\\test");
     }
 
     public BTree(String filename) throws IOException {
