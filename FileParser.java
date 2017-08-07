@@ -18,17 +18,17 @@ public class FileParser {
     private String gbkFilename;
     private File gbkFile;
     private int numInsertions;
-    
+
 
     public FileParser(int degree, String gbkFilename, int sequenceLength) {
-	this.degree = degree;
-	this.gbkFilename = gbkFilename;
-    this.sequenceLength = sequenceLength;
-	gbkFile = new File(gbkFilename);
-	encoder = new Encoder(sequenceLength);
-	btree = new BTree(degree);
-	numInsertions = 0;
-	getSequences(gbkFile);
+        this.degree = degree;
+        this.gbkFilename = gbkFilename;
+        this.sequenceLength = sequenceLength;
+        gbkFile = new File(gbkFilename);
+        encoder = new Encoder(sequenceLength);
+        btree = new BTree(degree);
+        numInsertions = 0;
+        getSequences(gbkFile);
     }
 
     public void getSequences(File f) {
@@ -48,18 +48,18 @@ public class FileParser {
                 while (line.charAt(line.length() - 1) != '/') {
                     line = line.replaceAll("[^gatc]", "");
                     for (int i = 0; i <= line.length() - sequenceLength; i++) {
-                    	
+
                         sequence = line.substring(i, i + sequenceLength);
                         btree.insert( encoder.encode(sequence) );
-                        
+
                         numInsertions++;
-                        if(System.currentTimeMillis() % 10 == 0){
-                        	System.out.print("\r"+numInsertions+" sequences inserted");
-                        }
+                        if (numInsertions % 250 == 0)
+                            System.out.print(".");
                     }
                     line = line.substring(line.length() - sequenceLength + 1) + br.readLine();
-                    
+
                 }
+                System.out.println("\n"+numInsertions+" sequences inserted");
             }
             br.close();
             System.out.println();

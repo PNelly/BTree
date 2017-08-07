@@ -10,9 +10,9 @@ public class BTreeNode {
     private int byteOffset;
 
     // -- // Constructors // -- //
-    
+
     public BTreeNode(int size){
-    	keyList = new TreeObject[size];
+        keyList = new TreeObject[size];
         childList = new int[size+1];
         numKeys = 0;
         numChildren = 0;
@@ -23,7 +23,7 @@ public class BTreeNode {
     }
 
     public BTreeNode(int size, int parent){
-    	keyList = new TreeObject[size];
+        keyList = new TreeObject[size];
         childList = new int[size +1];
         numKeys = 0;
         numChildren = 0;
@@ -38,59 +38,59 @@ public class BTreeNode {
         this.childList = children;
         this.byteOffset = byteOffset;
         // catch up counters and reset parents
-		for(int i=0; i<keyList.length; i++){
-		    if(keyList[i] != null) 
-		    	numKeys++;
-		    if(childList[i] != -1){
-		    	numChildren++;
-		    }
-		}
-		if(childList[childList.length-1] != -1) numChildren++;
+        for(int i=0; i<keyList.length; i++){
+            if(keyList[i] != null)
+                numKeys++;
+            if(childList[i] != -1){
+                numChildren++;
+            }
+        }
+        if(childList[childList.length-1] != -1) numChildren++;
     }
-    
+
     // -- // Public Methods // -- //
-    
-    	// -- // Status // -- //
-    
+
+    // -- // Status // -- //
+
     public boolean isLeaf(){
         return(numChildren == 0);
-   }
+    }
 
-   public boolean isFull(){
-       return(numKeys == keyList.length);
-   }
+    public boolean isFull(){
+        return(numKeys == keyList.length);
+    }
 
-   public int numKeys() { return numKeys; }
+    public int numKeys() { return numKeys; }
 
-    	// -- // Insertions // -- //
-    
+    // -- // Insertions // -- //
+
     public int insertKey(Long t){
-       try {
-           int i = 0;
-           while ((i < numKeys) && (t > keyList[i].getKey().longValue())) {
-               i++;
-           }
-           numKeys++;
-           if (keyList[i] == null) {
-               keyList[i] = new TreeObject(t);
-               return i;
-           } else {
-               // handle duplicates
-               if (t == keyList[i].getKey().longValue()) {
-                   keyList[i].incrementFrequency();
-                   numKeys--;
-                   return i;
-               }
-           }
-           for (int j = numKeys - 1; j > i; j--) {
-               keyList[j] = keyList[j - 1];
-           }
-           keyList[i] = new TreeObject(t);
-           return i;
-       } catch (Exception e) {
-           System.out.println("Crashed inserting a key" + e);
-       }
-       return -1;
+        try {
+            int i = 0;
+            while ((i < numKeys) && (t > keyList[i].getKey().longValue())) {
+                i++;
+            }
+            numKeys++;
+            if (keyList[i] == null) {
+                keyList[i] = new TreeObject(t);
+                return i;
+            } else {
+                // handle duplicates
+                if (t == keyList[i].getKey().longValue()) {
+                    keyList[i].incrementFrequency();
+                    numKeys--;
+                    return i;
+                }
+            }
+            for (int j = numKeys - 1; j > i; j--) {
+                keyList[j] = keyList[j - 1];
+            }
+            keyList[i] = new TreeObject(t);
+            return i;
+        } catch (Exception e) {
+            System.out.println("Crashed inserting a key" + e);
+        }
+        return -1;
     }
 
 
@@ -102,7 +102,7 @@ public class BTreeNode {
 
         int i = 0;
         while( (i<numKeys) && (n.getTreeObject(0) > keyList[i].getKey()) ){
-         i++;
+            i++;
         }
         numChildren++;
         if(i == numKeys +1){
@@ -116,7 +116,7 @@ public class BTreeNode {
         return i;
     }
 
-     	// -- // Getters and Setters // -- //
+    // -- // Getters and Setters // -- //
 
     public int getParentByte() {
         return parent;
@@ -144,7 +144,8 @@ public class BTreeNode {
     public int getbyteOffset(){
         //If byteOffset is -1, it's a new tree and we havent saved this node yet
         if (byteOffset == -1)
-            byteOffset = NodeStorage.saveNode(this);
+            byteOffset = NodeStorage.nextWritePos();
+            //byteOffset = NodeStorage.saveNode(this);
         return byteOffset;
     }
 
@@ -169,12 +170,12 @@ public class BTreeNode {
         }
         return NodeStorage.loadNode(childList[i]);
     }
-    
+
     public BTreeNode getChild(Long key) {
-		int i=0;
-		while( (i<numKeys) && (key>keyList[i].getKey()) )
-		    i++;
-		return NodeStorage.loadNode(childList[i]);
+        int i=0;
+        while( (i<numKeys) && (key>keyList[i].getKey()) )
+            i++;
+        return NodeStorage.loadNode(childList[i]);
     }
 
     public TreeObject[] rightOf(int i){
@@ -183,7 +184,7 @@ public class BTreeNode {
         cleanRightKeys(i);
         return l;
     }
-    
+
     public int[] getRightChildList(int i) {
         int[] c = new int[keyList.length+1];
         System.arraycopy(childList,i+1,c,0,keyList.length/2+1);
@@ -196,12 +197,12 @@ public class BTreeNode {
     public Long findKey(Long key){
         for(int i = 0; i < numKeys; i++){
             if(keyList[i].getKey() == key.longValue()){
-                 return key;
+                return key;
             }
         }
         return null;
     }
-    
+
     // -- // Private Methods // -- //
 
     private void setAllNegative(int[] arr) {
@@ -218,19 +219,19 @@ public class BTreeNode {
     }
 
     private void cleanRightKeys(int i){
-		for(int j = i; j<keyList.length; j++){
-		    keyList[j] = null;
-		    numKeys--;
-		}
+        for(int j = i; j<keyList.length; j++){
+            keyList[j] = null;
+            numKeys--;
+        }
     }
 
     private void cleanRightChildren(int i){
-		for(int j = i; j<childList.length; j++){
-			if(childList[j] != -1){
-		        childList[j] = -1;
-		        numChildren--;
-			}
-		}
+        for(int j = i; j<childList.length; j++){
+            if(childList[j] != -1){
+                childList[j] = -1;
+                numChildren--;
+            }
+        }
     }
 
 
@@ -271,15 +272,15 @@ public class BTreeNode {
         sb.append(parent);
         sb.append("\nKeyList: \n");
         for(int i=0; i<keyList.length;i++){
-        	if(keyList[i]!=null){
-	            sb.append(keyList[i].getFrequency());
-	            sb.append(" ");
-	            sb.append(keyList[i].getKey());
-	            sb.append("\n");
-        	}
+            if(keyList[i]!=null){
+                sb.append(keyList[i].getFrequency());
+                sb.append(" ");
+                sb.append(keyList[i].getKey());
+                sb.append("\n");
+            }
         }
         sb.append("ChildList: "+ Arrays.toString(childList));
         return sb.toString();
     }
-    
+
 }

@@ -11,70 +11,70 @@ import java.io.IOException;
 
 public class BTree {
 
-    // -- // Fields // -- //
-	
-    private int degree;
-    private int maxKeys;
-    private BTreeNode root;
+	// -- // Fields // -- //
 
-    // -- // Constructor // -- //
-    
-    public BTree(int degree){
+	private int degree;
+	private int maxKeys;
+	private BTreeNode root;
+
+	// -- // Constructor // -- //
+
+	public BTree(int degree){
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
-    }
-
-    public BTree(String filename) throws IOException {
-    	int p2 = filename.lastIndexOf(".");
-    	int p1 = filename.lastIndexOf(".");
-    	degree = Integer.parseInt(filename.substring(p1+1,p2));		//probably need to handle NumberFormatException here, but IntelliJ didn't say anything
-    	maxKeys = degree*2 -1;
-    	NodeStorage.setConfig(degree, filename);
-    	root = NodeStorage.loadNode(NodeStorage.getRoot());
 	}
 
-    // -- // Public Methods // -- //
-    
-    public void insert(Long key){
-    		recursiveInsert(key, root);
-    }
+	public BTree(String filename) throws IOException {
+		int p2 = filename.lastIndexOf(".");
+		int p1 = filename.lastIndexOf(".");
+		degree = Integer.parseInt(filename.substring(p1+1,p2));		//probably need to handle NumberFormatException here, but IntelliJ didn't say anything
+		maxKeys = degree*2 -1;
+		NodeStorage.setConfig(degree, filename);
+		root = NodeStorage.loadNode(NodeStorage.getRoot());
+	}
 
-    public void insert(long key){
-    	insert(new Long(key));
-    }
+	// -- // Public Methods // -- //
 
-    public Long find(Long key){
-    	return recursiveSearch(key, root);
-    }
+	public void insert(Long key){
+		recursiveInsert(key, root);
+	}
 
-    public Long find(long key){
-    	return find(new Long(key));
-    }
+	public void insert(long key){
+		insert(new Long(key));
+	}
 
-    // -- // Private Methods // -- //
+	public Long find(Long key){
+		return recursiveSearch(key, root);
+	}
+
+	public Long find(long key){
+		return find(new Long(key));
+	}
+
+	// -- // Private Methods // -- //
 
 	//On split we want to reassign to the new parent node, so return that
-    private BTreeNode split(BTreeNode node){
+	private BTreeNode split(BTreeNode node){
 
 		BTreeNode parent, right;
-	    parent = node.getParent();
-	
+		parent = node.getParent();
+
 		if(parent == null){
-		    parent = new BTreeNode(maxKeys);
+			parent = new BTreeNode(maxKeys);
 			parent.insertChild(node);
 			//parent.setbyteOffset(NodeStorage.saveNode(parent));
-            parent.setbyteOffset(NodeStorage.nextWritePos());
-		    node.setParent(parent.getbyteOffset());
-		    root   = parent;
+			parent.setbyteOffset(NodeStorage.nextWritePos());
+			node.setParent(parent.getbyteOffset());
+			root   = parent;
 		}
-	
+
 		int medianKeyIndex = degree -1;
 		parent.insertKey(node.getTreeObject(medianKeyIndex));
 		right = new BTreeNode(parent.getbyteOffset(),
-				      node.rightOf(medianKeyIndex),
-				      node.getRightChildList(medianKeyIndex),
-				      NodeStorage.nextWritePos()+NodeStorage.getNodeSize());
+				node.rightOf(medianKeyIndex),
+				node.getRightChildList(medianKeyIndex),
+				NodeStorage.nextWritePos());
 		//NodeStorage.saveNode(right);
 		//right.equals(NodeStorage.loadNode(right.getbyteOffset()));
 		parent.insertChild(right);
@@ -88,36 +88,36 @@ public class BTree {
 		//NodeStorage.updateChildren(right.getChildList(), right.getbyteOffset());
 
 		return parent;
-    }
+	}
 
-    private void recursiveInsert(Long key, BTreeNode node){
-	
+	private void recursiveInsert(Long key, BTreeNode node){
+
 		if(node.isFull()){
-		    node = split(node);
-		    //node = node.getParent();
+			node = split(node);
+			//node = node.getParent();
 		}
-	
+
 		if(!node.isLeaf())
-		    recursiveInsert(key, node.getChild(key));
+			recursiveInsert(key, node.getChild(key));
 		else {
 			node.insertKey(key);
 			NodeStorage.updateNode(node);
 		}
 
-    }
+	}
 
-    private Long recursiveSearch(Long key, BTreeNode node){
+	private Long recursiveSearch(Long key, BTreeNode node){
 
 		if(node == null)
 			return null;
-	
+
 		Long objective = node.findKey(key);
-	
+
 		if(objective != null)
-		    return objective;
-	
+			return objective;
+
 		return recursiveSearch(key, node.getChild(key));
 
-    }
+	}
 
 }
