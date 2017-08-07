@@ -79,7 +79,7 @@ public final class NodeStorage {
     }
 
     public static void dumpTree() {
-        File f = new File("/Users/patdoudy/Desktop/School/cs321/Assignment4BKP/src/treeDump");
+        File f = new File("NodeStorageTreeDump");
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
             for(int i = 4; i < file.length(); i += objSize) {
                 bw.write(readAtOffset(i).toString());

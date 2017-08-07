@@ -15,6 +15,7 @@ public class GeneBankCreateBTree {
     private static int useCache;
     private static int cacheSize;
     private static int debugLevel;
+    private static String outputFilename;
 
     GeneBankCreateBTree(){
 
@@ -99,6 +100,8 @@ public class GeneBankCreateBTree {
 	GeneBankCreateBTree driver = new GeneBankCreateBTree();
 	driver.processArguments(args);
 	System.out.println("starting BTree construction");
+	outputFilename = gbkFilename+".btree.data."+sequenceLength+"."+degree;
+	NodeStorage.setConfig(degree, outputFilename);
 	FileParser parser = new FileParser(degree, gbkFilename, sequenceLength);
 	NodeStorage.dumpTree();
 	System.out.println("\ndone!");
