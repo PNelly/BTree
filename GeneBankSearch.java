@@ -66,10 +66,8 @@ public class GeneBankSearch {
                         printUsage();
                         throw new InvalidParameterException();
                     }
-                    if(Integer.parseInt(args[4])!=0 && Integer.parseInt(args[4])!=1){
 
                     if(Integer.parseInt(args[4])!=0 && Integer.parseInt(args[4])!=1) {
-
                         System.out.println("Input argument <debug level> could not be parsed as 0 or 1.");
                         printUsage();
                         throw new InvalidParameterException();
@@ -86,22 +84,17 @@ public class GeneBankSearch {
             System.out.println(e);
         }
 
-            BTreeFile = new File(args[1]);
-            queryFile = new File(args[2]);
-
         try {
             tree = new BTree(args[1]);
             queryFile = new File(args[2]);
             BufferedReader br = new BufferedReader(new FileReader(queryFile));
             encoder = new Encoder(32);
 
-
             String line = br.readLine();
             if(tree.find(encoder.encode(line))!= null);{
                 System.out.println(line + " was found");
             }
             while((line = br.readLine()) != null){
-                //line = br.readLine();
                 if(tree.find(encoder.encode(line))!= null);{
                     System.out.println(line + " was found");
                 }
@@ -111,20 +104,6 @@ public class GeneBankSearch {
         catch(Exception e){
             System.out.println(e);
         }
-
-        BTreeFile = new File(args[1]);
-        queryFile = new File(args[2]);
-        if (BTreeFile == null || queryFile == null) {
-            System.out.println("Input file could not be found, please verify that it exists");
-            printUsage();
-        }
-        try {
-            BTree bTree = new BTree(args[1]);
-
-        } catch (Exception e) {
-            System.out.println("Error loading BTreeFile");
-        }
-
 
     }
 

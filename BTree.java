@@ -23,23 +23,13 @@ public class BTree {
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.root    = new BTreeNode(maxKeys);
-<<<<<<< HEAD
+
     }
 
-    public BTree(String filename) throws IOException {
-    	int p2 = filename.lastIndexOf(".");
-    	int p1 = filename.lastIndexOf(".", p2-1);
-    	degree = Integer.parseInt(filename.substring(p1+1,p2));		//probably need to handle NumberFormatException here, but IntelliJ didn't say anything
-    	maxKeys = degree*2 -1;
-    	NodeStorage.setConfig(degree, filename);
-    	root = NodeStorage.loadNode(NodeStorage.getRoot());
-=======
->>>>>>> 37fe0f530f6d8219771a08db97160b5fc9e7b683
-	}
 
 	public BTree(String filename) throws IOException {
 		int p2 = filename.lastIndexOf(".");
-		int p1 = filename.lastIndexOf(".");
+		int p1 = filename.lastIndexOf(".", p2-1);
 		degree = Integer.parseInt(filename.substring(p1+1,p2));		//probably need to handle NumberFormatException here, but IntelliJ didn't say anything
 		maxKeys = degree*2 -1;
 		NodeStorage.setConfig(degree, filename);
