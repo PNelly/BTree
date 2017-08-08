@@ -27,7 +27,7 @@ public class BTree {
 
     public BTree(String filename) throws IOException {
     	int p2 = filename.lastIndexOf(".");
-    	int p1 = filename.lastIndexOf(".");
+    	int p1 = filename.lastIndexOf(".", p2-1);
     	degree = Integer.parseInt(filename.substring(p1+1,p2));		//probably need to handle NumberFormatException here, but IntelliJ didn't say anything
     	maxKeys = degree*2 -1;
     	NodeStorage.setConfig(degree, filename);

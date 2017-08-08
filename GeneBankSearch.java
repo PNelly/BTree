@@ -81,16 +81,8 @@ public class GeneBankSearch {
             printUsage();
             System.out.println(e);
         }
-        try{
             BTreeFile = new File(args[1]);
             queryFile = new File(args[2]);
-        }
-        catch (FileNotFoundException e){
-            System.out.println("Input file could not be found, please verify that it exists");
-            System.out.println(e);
-        }
-
-
 
         try {
             tree = new BTree(args[1]);
@@ -103,8 +95,8 @@ public class GeneBankSearch {
             if(tree.find(encoder.encode(line))!= null);{
                 System.out.println(line + " was found");
             }
-            while(line != null){
-                line = br.readLine();
+            while((line = br.readLine()) != null){
+                //line = br.readLine();
                 if(tree.find(encoder.encode(line))!= null);{
                     System.out.println(line + " was found");
                 }
