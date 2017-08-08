@@ -76,10 +76,12 @@ public class GeneBankSearch {
 
 
         try {
-            tree = new BTree(args[1]);
+
+            String[] s = args[1].split("\\.");
+            tree = new BTree(args[1], Integer.parseInt(s[5]));
             queryFile = new File(args[2]);
             BufferedReader br = new BufferedReader(new FileReader(queryFile));
-            encoder = new Encoder(32);
+            encoder = new Encoder(Integer.parseInt(s[4]));
             TreeObject tobj = null;
             BufferedWriter bw = null;
             File dump = new File("dump.txt");
@@ -87,7 +89,7 @@ public class GeneBankSearch {
             bw = new BufferedWriter(fw);
 
             String line = br.readLine();
-            if ((tobj = tree.find(encoder.encode(line))) != null) ;
+            if ((tobj = tree.find(encoder.encode(line))) != null)
             {
                 if(debugLevel == 0)
                     System.out.println(line + " was found " + tobj.getFrequency());
@@ -96,19 +98,20 @@ public class GeneBankSearch {
                 }
 
 
-                }
-                while ((line = br.readLine()) != null) {
-                    if ((tobj = tree.find(encoder.encode(line))) != null) ;
-                    {
-                        if(debugLevel == 0) {
-                            System.out.println(line + " was found " + tobj.getFrequency());
-                        }
-                        else{
-                            bw.write(line+" "+tobj.getFrequency()+"\n");
-                        }
+            }
+            while ((line = br.readLine()) != null) {
+                if ((tobj = tree.find(encoder.encode(line))) != null)
+                {
+                    if(debugLevel == 0) {
+                        System.out.println(line + " was found " + tobj.getFrequency());
+                    }
+                    else{
+                        bw.write(line+" "+tobj.getFrequency()+"\n");
                     }
                 }
-
+            }
+            bw.flush();
+            bw.close();
         } catch (Exception e) {
             System.out.println(e);
         }

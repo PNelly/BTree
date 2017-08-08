@@ -63,12 +63,22 @@ public final class NodeStorage {
             System.out.println(e);
         }
     }
-    public static void setRootLocation(int n) {
-        rootLocation = n;
+
+    public static int getRoot() throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(file, "rw");
+        raf.seek(0);
+        return raf.readInt();
     }
 
-    public static int getRootLocation() {
-        return rootLocation;
+    public static void setRootLocation(int n) {
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
+            raf.seek(0);
+            raf.write(ByteBuffer.allocate(4).putInt(n).array());
+            raf.close();
+        } catch (Exception e) {
+            System.out.println("Exception setting new root location"+e);
+        }
     }
 
     public static int nextWritePos() {
@@ -288,12 +298,6 @@ public final class NodeStorage {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static int getRoot() throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(file, "rw");
-        raf.seek(0);
-        return raf.readInt();
     }
 
     //Convert out TreeObjects into usable byte arrays

@@ -26,7 +26,7 @@ public class Encoder {
 
     // Encode String -> long
     public long encode(String sequence){
-
+		sequence = sequence.toLowerCase();
 		long output = 0;
 		long t, c, g;
 
