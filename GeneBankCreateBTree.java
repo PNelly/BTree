@@ -16,9 +16,10 @@ public class GeneBankCreateBTree {
 	private static int cacheSize;
 	private static int debugLevel;
 	private static String outputFilename;
+        private static final int defaultDegree = 128;
 
-	GeneBankCreateBTree(){
-
+	GeneBankCreateBTree(String[] args){
+	    processArguments(args);
 	}
 
 	public void processArguments(String[] args){
@@ -39,9 +40,14 @@ public class GeneBankCreateBTree {
 				usageQuit();
 			}
 
-			if(!(degree >= 1)){
-				System.out.println("degree must be >= 1");
+			if(!(degree >= 0)){
+				System.out.println("degree must be >= 0");
 				usageQuit();
+			}
+
+			if(degree==0){
+			    degree = defaultDegree;
+			    System.out.println("using degree "+defaultDegree+" assuming disk block of 4096 bytes");
 			}
 
 			if(!(sequenceLength >= 1 && sequenceLength <= 31)){
@@ -95,9 +101,8 @@ public class GeneBankCreateBTree {
 	}
 
 	public static void main(String[] args){
-		GeneBankCreateBTree driver = new GeneBankCreateBTree();
-		driver.processArguments(args);
-		System.out.println("starting BTree construction");
+		GeneBankCreateBTree driver = new GeneBankCreateBTree(args);
+       		System.out.println("starting BTree construction");
 		outputFilename = gbkFilename+".btree.data."+sequenceLength+"."+degree;
 		if (useCache == 1)
 			NodeStorage.setConfig(degree, outputFilename, cacheSize);
