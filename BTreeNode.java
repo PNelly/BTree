@@ -194,10 +194,10 @@ public class BTreeNode {
         return c;
     }
 
-    public Long findKey(Long key){
+    public TreeObject findKey(Long key){
         for(int i = 0; i < numKeys; i++){
             if(keyList[i].getKey() == key.longValue()){
-                return key;
+                return keyList[i];
             }
         }
         return null;
@@ -249,7 +249,7 @@ public class BTreeNode {
             return false;
         }
         for (int i = 0; i < keyList.length && keyList[i] != null; i++) {
-            if(n.findKey(keyList[i].getKey()) != keyList[i].getKey()) {
+            if(n.findKey(keyList[i].getKey()).getKey() != keyList[i].getKey()) {
                 System.out.println("Couldn't find key: "+keyList[i].getKey());
                 return false;
             }

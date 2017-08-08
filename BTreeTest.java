@@ -47,9 +47,9 @@ public class BTreeTest{
 			startTime = System.nanoTime();
 			for (i = 0; i < iterations; i++) {
 				Long objective = insertedKeys.get(i);
-				Long result = tree.find(objective);
+				TreeObject result = tree.find(objective);
 
-				if (result != null && objective.longValue() == result.longValue())
+				if (result != null && objective.longValue() == result.getKey().longValue())
 					numSuccessfulSearches++;
 
 				System.out.print("\r" + numSuccessfulSearches + " of " + iterations + " searches successful");

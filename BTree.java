@@ -46,11 +46,11 @@ public class BTree {
 		insert(new Long(key));
 	}
 
-	public Long find(Long key){
+	public TreeObject find(Long key){
 		return recursiveSearch(key, root);
 	}
 
-	public Long find(long key){
+	public TreeObject find(long key){
 		return find(new Long(key));
 	}
 
@@ -108,12 +108,12 @@ public class BTree {
 
 	}
 
-	private Long recursiveSearch(Long key, BTreeNode node){
+	private TreeObject recursiveSearch(Long key, BTreeNode node){
 
 		if(node == null)
 			return null;
 
-		Long objective = node.findKey(key);
+		TreeObject objective = node.findKey(key);
 
 		if(objective != null)
 			return objective;

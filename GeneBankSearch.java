@@ -1,9 +1,4 @@
-import com.sun.javaws.exceptions.InvalidArgumentException;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.security.InvalidParameterException;
 
 
@@ -24,97 +19,109 @@ public class GeneBankSearch {
     private static BTree tree;
     private static Encoder encoder;
 
-    public static void main(String[] args) throws InvalidParameterException{
-        if(args.length < 3 || args.length > 5){
-            System.out.println("Incorrect number of arguments.");
+    public static void main(String[] args) throws InvalidParameterException {
+        if (args.length < 3 || args.length > 5) {
+            System.err.println("Incorrect number of arguments.");
             printUsage();
             throw new InvalidParameterException();
         }
-        try{
-            if(Integer.parseInt(args[0]) != 0 && Integer.parseInt(args[0]) != 1){
-                System.out.println("Input argument <with/without Cache> could not be parsed as a 0 or 1.");
+        try {
+            if (Integer.parseInt(args[0]) != 0 && Integer.parseInt(args[0]) != 1) {
+                System.err.println("Input argument <with/without Cache> could not be parsed as a 0 or 1.");
                 printUsage();
                 throw new InvalidParameterException();
-            }
-            else{
+            } else {
                 cache = Integer.parseInt(args[0]);
             }
-            if(args.length > 3) {
-                if(Integer.parseInt(args[0]) == 1) {
+            if (args.length > 3) {
+                if (Integer.parseInt(args[0]) == 1) {
                     if (Integer.parseInt(args[3]) < 1) {
-                        System.out.println("Cache size must be greater than 0.");
+                        System.err.println("Cache size must be greater than 0.");
                         printUsage();
                         throw new InvalidParameterException();
                     } else {
                         cacheSize = Integer.parseInt(args[3]);
                     }
-                }
-                else{
-                    if(Integer.parseInt(args[4])!=0 && Integer.parseInt(args[4])!=1){
-                        System.out.println("Input argument <debug level> could not be parsed as 0 or 1.");
+                } else {
+                    if (Integer.parseInt(args[3]) != 0 && Integer.parseInt(args[3]) != 1) {
+                        System.err.println("Input argument <debug level> could not be parsed as 0 or 1.");
                         printUsage();
                         throw new InvalidParameterException();
-                    }
-                    else{
-                        debugLevel = Integer.parseInt(args[4]);
+                    } else {
+                        debugLevel = Integer.parseInt(args[3]);
                     }
                 }
-                if(args.length > 4){
+                if (args.length > 4) {
 
-                    if(Integer.parseInt(args[0]) == 0){
-                        System.out.println("Cannot pass cache size when cache setting argument is set to 0");
+                    if (Integer.parseInt(args[0]) == 0) {
+                        System.err.println("Cannot pass cache size when cache setting argument is set to 0");
                         printUsage();
                         throw new InvalidParameterException();
                     }
 
-                    if(Integer.parseInt(args[4])!=0 && Integer.parseInt(args[4])!=1) {
-                        System.out.println("Input argument <debug level> could not be parsed as 0 or 1.");
+                    if (Integer.parseInt(args[4]) != 0 && Integer.parseInt(args[4]) != 1) {
+                        System.err.println("Input argument <debug level> could not be parsed as 0 or 1.");
                         printUsage();
                         throw new InvalidParameterException();
-                    }
-                    else{
+                    } else {
                         debugLevel = Integer.parseInt(args[4]);
                     }
                 }
             }
-        }
-        catch (NumberFormatException e){
-            System.out.println("Input argument cannot be read as a number");
+        } catch (NumberFormatException e) {
+            System.err.println("Input argument cannot be read as a number");
             printUsage();
-            System.out.println(e);
+            System.err.println(e);
         }
+
 
         try {
             tree = new BTree(args[1]);
             queryFile = new File(args[2]);
             BufferedReader br = new BufferedReader(new FileReader(queryFile));
             encoder = new Encoder(32);
+            TreeObject tobj = null;
+            BufferedWriter bw = null;
+            File dump = new File("dump.txt");
+            FileWriter fw = new FileWriter(dump);
+            bw = new BufferedWriter(fw);
 
             String line = br.readLine();
-            if(tree.find(encoder.encode(line))!= null);{
-                System.out.println(line + " was found");
-            }
-            while((line = br.readLine()) != null){
-                if(tree.find(encoder.encode(line))!= null);{
-                    System.out.println(line + " was found");
+            if ((tobj = tree.find(encoder.encode(line))) != null) ;
+            {
+                if(debugLevel == 0)
+                    System.out.println(line + " was found " + tobj.getFrequency());
+                else{
+                    bw.write(line+" "+ tobj.getFrequency()+"\n");
                 }
-            }
 
-        }
-        catch(Exception e){
+
+                }
+                while ((line = br.readLine()) != null) {
+                    if ((tobj = tree.find(encoder.encode(line))) != null) ;
+                    {
+                        if(debugLevel == 0) {
+                            System.out.println(line + " was found " + tobj.getFrequency());
+                        }
+                        else{
+                            bw.write(line+" "+tobj.getFrequency()+"\n");
+                        }
+                    }
+                }
+
+        } catch (Exception e) {
             System.out.println(e);
         }
-
     }
 
     private static void printUsage(){
-        System.out.println("Incorrect input. Please run this command with the following arguments:");
-        System.out.println("java GeneBankSearch <0/1 (without/with Cache)> <btree file> <query file> [<cache size>] [<debug level>]");
-        System.out.println("With/without Cache: Specify whether this search instance of the given BTree with the given query file will utilize a chache.");
-        System.out.println("BTree file: Provide a file with associated with a BTree, be sure that the GeneBankCreateBtree has already been successfully run and compiled.");
-        System.out.println("Query file: Provide a file with associated list of queries for the given search, be sure that the sequence length of the query matches the given BTree");
-        System.out.println("Cache size(optional): Specified the desired Cache size, the default cache size will be set to optimize the cache.");
-        System.out.println("Debug level(optional): Specify 0: standard debug level, will output any error messages. Specify 1: create a dump file with a list of frequencies for each query.");
-        System.exit(0);
+        System.err.println("Incorrect input. Please run this command with the following arguments:");
+        System.err.println("java GeneBankSearch <0/1 (without/with Cache)> <btree file> <query file> [<cache size>] [<debug level>]");
+        System.err.println("With/without Cache: Specify whether this search instance of the given BTree with the given query file will utilize a chache.");
+        System.err.println("BTree file: Provide a file with associated with a BTree, be sure that the GeneBankCreateBtree has already been successfully run and compiled.");
+        System.err.println("Query file: Provide a file with associated list of queries for the given search, be sure that the sequence length of the query matches the given BTree");
+        System.err.println("Cache size(optional): Specified the desired Cache size, the default cache size will be set to optimize the cache.");
+        System.err.println("Debug level(optional): Specify 0: standard debug level, will output any error messages. Specify 1: create a dump file with a list of frequencies for each query.");
+        System.exit(1);
     }
 }
