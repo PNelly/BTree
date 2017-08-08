@@ -15,7 +15,7 @@ public class EncoderDriver {
 	}
 
 	private static void fileParseTest(String filepath) {
-		FileParser fp = new FileParser(7);
+		FileParser fp = new FileParser(7, filepath, 1);
 		File f = new File(filepath);
 		System.out.println(f);
 		fp.getSequences(f);

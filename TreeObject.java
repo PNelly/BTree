@@ -11,12 +11,12 @@ public class TreeObject {
 
 	public TreeObject(Long key){
         this.key = key;
-        frequency = 0;
+        frequency = 1;
     }
 	
 	public TreeObject(long key){
 		this.key = new Long(key);
-		frequency = 0;
+		frequency = 1;
 	}
 
     public void setKey(long key) {
