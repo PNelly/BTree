@@ -78,7 +78,11 @@ public class GeneBankSearch {
         try {
 
             String[] s = args[1].split("\\.");
-            tree = new BTree(args[1], Integer.parseInt(s[5]));
+            if(cache == 1) {
+                tree = new BTree(args[1], Integer.parseInt(s[5]), cacheSize);
+            } else {
+                tree = new BTree(args[1], Integer.parseInt(s[5]));
+            }
             queryFile = new File(args[2]);
             BufferedReader br = new BufferedReader(new FileReader(queryFile));
             encoder = new Encoder(Integer.parseInt(s[4]));

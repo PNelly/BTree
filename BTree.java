@@ -26,8 +26,15 @@ public class BTree {
 
     }
 
+    public BTree(String filename, int degree, int cacheSize) throws IOException {
+		this.degree = degree;
+		maxKeys = degree*2 -1;
+		NodeStorage.setConfig(degree, filename, cacheSize);
+		root = NodeStorage.loadNode(NodeStorage.getRoot());
+	}
 
 	public BTree(String filename, int degree) throws IOException {
+		this.degree = degree;
 		maxKeys = degree*2 -1;
 		NodeStorage.setConfig(degree, filename);
 		root = NodeStorage.loadNode(NodeStorage.getRoot());
