@@ -20,7 +20,6 @@ public class GeneBankCreateBTree {
 	private static int debugLevel;
 	private static String outputFilename;
         private static final int defaultDegree = 128;
-        private static final boolean devDebug = false;
         private static BTree btree;
 
 	GeneBankCreateBTree(String[] args){
@@ -126,10 +125,10 @@ public class GeneBankCreateBTree {
 			NodeStorage.setConfig(degree, outputFilename);
 		btree = new BTree(degree, sequenceLength);
 		FileParser parser = new FileParser(degree, gbkFilename, sequenceLength, btree);
-		NodeStorage.dumpTree(devDebug);
+		NodeStorage.dumpTree(debugLevel);
 		if(debugLevel==1){
 		    try{
-			System.out.println("creating dump file...");
+			System.out.println("creating inorder traversal dump file...");
 			btree.inOrderDump();
 			System.out.println("\nfinished dump file");
 		    }catch (IOException e){

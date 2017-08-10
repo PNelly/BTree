@@ -135,11 +135,11 @@ public final class NodeStorage {
         return readAtOffset(byteAddress);
     }
 
-    public static void dumpTree(boolean devDump) {
+    public static void dumpTree(int debugLevel) {
         if (useCache)
             cache.dumpCacheToFile();
 
-	if(devDump){
+	if(debugLevel==1){
 	    File f = new File("NodeStorageTreeDump");
 	    try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
 		    for(int i = 4; i < file.length(); i += objSize) {
