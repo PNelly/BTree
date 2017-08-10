@@ -8,6 +8,7 @@
  */
 
 import java.io.File;
+import java.io.IOException;
 
 public class GeneBankCreateBTree {
 
@@ -19,6 +20,8 @@ public class GeneBankCreateBTree {
 	private static int debugLevel;
 	private static String outputFilename;
         private static final int defaultDegree = 128;
+        private static final boolean devDebug = false;
+        private static BTree btree;
 
 	GeneBankCreateBTree(String[] args){
 	    processArguments(args);
@@ -121,9 +124,19 @@ public class GeneBankCreateBTree {
 			NodeStorage.setConfig(degree, outputFilename, cacheSize);
 		else
 			NodeStorage.setConfig(degree, outputFilename);
-		FileParser parser = new FileParser(degree, gbkFilename, sequenceLength);
-		NodeStorage.dumpTree();
-		System.out.println("\ndone!");
+		btree = new BTree(degree, sequenceLength);
+		FileParser parser = new FileParser(degree, gbkFilename, sequenceLength, btree);
+		NodeStorage.dumpTree(devDebug);
+		if(debugLevel==1){
+		    try{
+			System.out.println("creating dump file...");
+			btree.inOrderDump();
+			System.out.println("\nfinished dump file");
+		    }catch (IOException e){
+			System.out.println("inorder dump file create failed");
+		    }
+		}
+      		System.out.println("\ndone!");
 	}
 
 }

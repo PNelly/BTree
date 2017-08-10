@@ -20,14 +20,14 @@ public class FileParser {
     private int numInsertions;
 
 
-    public FileParser(int degree, String gbkFilename, int sequenceLength) {
+    public FileParser(int degree, String gbkFilename, int sequenceLength, BTree btree) {
         this.degree = degree;
         this.gbkFilename = gbkFilename;
         this.sequenceLength = sequenceLength;
         gbkFile = new File(gbkFilename);
         encoder = new Encoder(sequenceLength);
-        btree = new BTree(degree);
-        numInsertions = 0;
+        this.btree = btree;
+	numInsertions = 0;
         getSequences(gbkFile);
     }
 

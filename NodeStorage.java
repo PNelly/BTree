@@ -135,21 +135,23 @@ public final class NodeStorage {
         return readAtOffset(byteAddress);
     }
 
-    public static void dumpTree() {
+    public static void dumpTree(boolean devDump) {
         if (useCache)
             cache.dumpCacheToFile();
 
-        File f = new File("NodeStorageTreeDump");
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
-            for(int i = 4; i < file.length(); i += objSize) {
-                bw.write(readAtOffset(i).toString());
-                bw.newLine();
-            }
-            bw.flush();
-            bw.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+	if(devDump){
+	    File f = new File("NodeStorageTreeDump");
+	    try (BufferedWriter bw = new BufferedWriter(new FileWriter(f))) {
+		    for(int i = 4; i < file.length(); i += objSize) {
+			bw.write(readAtOffset(i).toString());
+			bw.newLine();
+		    }
+		    bw.flush();
+		    bw.close();
+		} catch (Exception e) {
+		System.out.println(e);
+	    }
+	}
     }
 
     private static BTreeNode readLast() {

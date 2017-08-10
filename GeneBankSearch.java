@@ -112,34 +112,37 @@ public class GeneBankSearch {
             encoder = new Encoder(Integer.parseInt(s[4]));
             TreeObject tobj = null;
             BufferedWriter bw = null;
-            File dump = new File("dump.txt");
-            FileWriter fw = new FileWriter(dump);
-            bw = new BufferedWriter(fw);
+
+	    if(debugLevel == 1){
+		File dump = new File("searchDump");
+		FileWriter fw = new FileWriter(dump);
+		bw = new BufferedWriter(fw);
+	    }
 
             String line = br.readLine();
+
             if ((tobj = tree.find(encoder.encode(line))) != null)
             {
-                if(debugLevel == 0)
-                    System.out.println(line + " was found " + tobj.getFrequency());
-                else{
-                    bw.write(line+" "+ tobj.getFrequency()+"\n");
-                }
-
-
+		System.out.println(line+" found "+tobj.getFrequency());
+                
+      		if(debugLevel==1)
+		    bw.write(tobj.getFrequency()+"\t"+line+"\n");
             }
             while ((line = br.readLine()) != null) {
                 if ((tobj = tree.find(encoder.encode(line))) != null)
                 {
-                    if(debugLevel == 0) {
-                        System.out.println(line + " was found " + tobj.getFrequency());
-                    }
-                    else{
-                        bw.write(line+" "+tobj.getFrequency()+"\n");
-                    }
+		    System.out.println(line+" found "+tobj.getFrequency());
+
+		    if(debugLevel==1)
+			bw.write(tobj.getFrequency()+"\t"+line+"\n");
                 }
             }
-            bw.flush();
-            bw.close();
+
+	    if(debugLevel==1){
+		bw.flush();
+		bw.close();
+	    }
+
         } catch (Exception e) {
             System.out.println(e);
         }

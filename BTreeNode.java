@@ -62,6 +62,8 @@ public class BTreeNode {
 
     public int numKeys() { return numKeys; }
 
+    public int numChildren() { return numChildren; }
+
     // -- // Insertions // -- //
 
     public int insertKey(Long t){
@@ -201,6 +203,10 @@ public class BTreeNode {
             }
         }
         return null;
+    }
+
+    public TreeObject treeObjectByIndex(int i){
+	return keyList[i];
     }
 
     // -- // Private Methods // -- //
