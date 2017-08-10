@@ -1,0 +1,51 @@
+Michael Burke
+Patrick Doudy
+Ben ???
+
+BTree Data Structure:
+First 4 bytes of file - Root node byte location
+Rest of file - Nodes
+Node structure  
+	4 bytes - Parent Byte Location
+	8 bytes * number of keys - Long key
+	4 bytes * number of keys - Frequency of each key
+	4 bytes * number of keys + 1 - Child byte locations
+Nodes are written to file at a fixed size, regardless of whether the node is full
+
+Runtime - Creation
+From test3.gbk with degree 12 and sequence length 7
+-No cache
+	real	0m0.427s
+	user	0m1.320s
+	sys	0m0.221s
+
+-Cache size 100
+	real	0m0.305s
+	user	0m0.984s
+	sys	0m0.188s
+
+-Cache size 500
+	real	0m0.145s
+	user	0m0.450s
+	sys	0m0.035s
+
+Runtime - Search
+From tree generated above, using query7
+-No cache
+	real	0m0.393s
+	user	0m0.618s
+	sys	0m0.161s
+
+-Cache size 100
+	real	0m0.210s
+	user	0m0.526s
+	sys	0m0.073s
+
+-Cache size 500
+	real	0m0.181s
+	user	0m0.493s
+	sys	0m0.066s
+
+Cache vastly improves both creation and search, with more benefit seen during
+creation of the tree with a larger cache than when searching it.  An improvement
+is still seen with a larger cache, but the benefit appears to be diminishing.
