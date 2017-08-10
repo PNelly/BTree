@@ -33,6 +33,30 @@ public class GeneBankSearch {
             } else {
                 cache = Integer.parseInt(args[0]);
             }
+
+	    BTreeFile = new File(args[1]);
+	    if(!BTreeFile.exists()){
+		BTreeFile.delete();
+		System.err.println("Tree file "+args[1]+" does not exist");
+		printUsage();
+		throw new InvalidParameterException();
+	    } else {
+		if(!args[1].contains(".gbk.btree.data.")){
+		    System.err.println(args[1]+" is not a valid BTree file");
+		    printUsage();
+		    throw new InvalidParameterException();
+		}
+	       
+	    }
+	    queryFile = new File(args[2]);
+	    if(!queryFile.exists()){
+		    queryFile.delete();
+		    System.err.println("query file "+args[2]+" does not exist");
+		    printUsage();
+		    throw new InvalidParameterException();
+	    }
+	    
+
             if (args.length > 3) {
                 if (Integer.parseInt(args[0]) == 1) {
                     if (Integer.parseInt(args[3]) < 1) {

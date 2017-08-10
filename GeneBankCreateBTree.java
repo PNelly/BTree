@@ -7,6 +7,8 @@
  * CS321 Summer 2017
  */
 
+import java.io.File;
+
 public class GeneBankCreateBTree {
 
 	private static int degree;
@@ -34,6 +36,17 @@ public class GeneBankCreateBTree {
 			degree   = Integer.parseInt(args[1]);
 			gbkFilename  = args[2];
 			sequenceLength = Integer.parseInt(args[3]);
+
+			File gbkFileTest = new File(gbkFilename);
+			if(!gbkFileTest.exists()){
+			    System.out.println(gbkFilename+" does not exist");
+			    usageQuit();
+			} else {
+			    if(!gbkFilename.contains(".gbk")){
+				    System.out.println("input file does contain .gbk extension");
+				    usageQuit();
+			    }
+			}
 
 			if(useCache != 0 && useCache != 1){
 				System.out.println("cache indicator must be 0 or 1");
