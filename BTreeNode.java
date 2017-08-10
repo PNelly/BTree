@@ -249,7 +249,7 @@ public class BTreeNode {
             return false;
         }
         for (int i = 0; i < keyList.length && keyList[i] != null; i++) {
-            if(n.findKey(keyList[i].getKey()).getKey() != keyList[i].getKey()) {
+            if(!n.findKey(keyList[i].getKey()).getKey().equals( keyList[i].getKey()) ) {
                 System.out.println("Couldn't find key: "+keyList[i].getKey());
                 return false;
             }
