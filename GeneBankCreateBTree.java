@@ -19,11 +19,11 @@ public class GeneBankCreateBTree {
 	private static int cacheSize;
 	private static int debugLevel;
 	private static String outputFilename;
-        private static final int defaultDegree = 128;
-        private static BTree btree;
+	private static final int defaultDegree = 128;
+	private static BTree btree;
 
 	GeneBankCreateBTree(String[] args){
-	    processArguments(args);
+		processArguments(args);
 	}
 
 	public void processArguments(String[] args){
@@ -41,13 +41,13 @@ public class GeneBankCreateBTree {
 
 			File gbkFileTest = new File(gbkFilename);
 			if(!gbkFileTest.exists()){
-			    System.out.println(gbkFilename+" does not exist");
-			    usageQuit();
+				System.out.println(gbkFilename+" does not exist");
+				usageQuit();
 			} else {
-			    if(!gbkFilename.contains(".gbk")){
-				    System.out.println("input file does contain .gbk extension");
-				    usageQuit();
-			    }
+				if(!gbkFilename.contains(".gbk")){
+					System.out.println("input file does contain .gbk extension");
+					usageQuit();
+				}
 			}
 
 			if(useCache != 0 && useCache != 1){
@@ -61,8 +61,8 @@ public class GeneBankCreateBTree {
 			}
 
 			if(degree==0){
-			    degree = defaultDegree;
-			    System.out.println("using degree "+defaultDegree+" assuming disk block of 4096 bytes");
+				degree = defaultDegree;
+				System.out.println("using degree "+defaultDegree+" assuming disk block of 4096 bytes");
 			}
 
 			if(!(sequenceLength >= 1 && sequenceLength <= 31)){
@@ -117,7 +117,7 @@ public class GeneBankCreateBTree {
 
 	public static void main(String[] args){
 		GeneBankCreateBTree driver = new GeneBankCreateBTree(args);
-       		System.out.println("starting BTree construction");
+		System.out.println("starting BTree construction");
 		outputFilename = gbkFilename+".btree.data."+sequenceLength+"."+degree;
 		if (useCache == 1)
 			NodeStorage.setConfig(degree, outputFilename, cacheSize);
@@ -127,15 +127,15 @@ public class GeneBankCreateBTree {
 		FileParser parser = new FileParser(degree, gbkFilename, sequenceLength, btree);
 		NodeStorage.dumpTree(debugLevel);
 		if(debugLevel==1){
-		    try{
-			System.out.println("creating inorder traversal dump file...");
-			btree.inOrderDump();
-			System.out.println("\nfinished dump file");
-		    }catch (IOException e){
-			System.out.println("inorder dump file create failed");
-		    }
+			try{
+				System.out.println("creating inorder traversal dump file...");
+				btree.inOrderDump();
+				System.out.println("\nfinished dump file");
+			}catch (IOException e){
+				System.out.println("inorder dump file create failed");
+			}
 		}
-      		System.out.println("\ndone!");
+		System.out.println("\ndone!");
 	}
 
 }

@@ -19,26 +19,26 @@ public class BTree {
 
 	private int degree;
 	private int maxKeys;
-    private int sequenceLength;
+	private int sequenceLength;
 	private BTreeNode root;
 
-    private File inOrderDumpFile;
-    private BufferedWriter inOrderBufferedWriter;
-    private FileWriter inOrderFileWriter;
-    private PrintWriter inOrderPrintWriter;
-    private String inOrderDumpFileName = "dump";
-    private Encoder inOrderEncoder;
+	private File inOrderDumpFile;
+	private BufferedWriter inOrderBufferedWriter;
+	private FileWriter inOrderFileWriter;
+	private PrintWriter inOrderPrintWriter;
+	private String inOrderDumpFileName = "dump";
+	private Encoder inOrderEncoder;
 	// -- // Constructor // -- //
 
-    public BTree(int degree, int sequenceLength){
+	public BTree(int degree, int sequenceLength){
 		this.degree  = degree;
 		this.maxKeys = degree*2 -1;
 		this.sequenceLength = sequenceLength;
 		this.root    = new BTreeNode(maxKeys);
 
-    }
+	}
 
-    public BTree(String filename, int degree, int cacheSize) throws IOException {
+	public BTree(String filename, int degree, int cacheSize) throws IOException {
 		this.degree = degree;
 		maxKeys = degree*2 -1;
 		NodeStorage.setConfig(degree, filename, cacheSize);
@@ -70,29 +70,29 @@ public class BTree {
 		return find(new Long(key));
 	}
 
-        public void inOrderDump() throws IOException {
+	public void inOrderDump() throws IOException {
 
-	    inOrderDumpFile = new File(inOrderDumpFileName);
-	    if(inOrderDumpFile.exists()){
-		inOrderDumpFile.delete();
-		inOrderDumpFile.createNewFile();
-	    }
-	    inOrderFileWriter = new FileWriter(inOrderDumpFile);
-	    inOrderBufferedWriter = new BufferedWriter(inOrderFileWriter);
-	    inOrderPrintWriter = new PrintWriter(inOrderBufferedWriter);
-	    inOrderEncoder = new Encoder(sequenceLength);
+		inOrderDumpFile = new File(inOrderDumpFileName);
+		if(inOrderDumpFile.exists()){
+			inOrderDumpFile.delete();
+			inOrderDumpFile.createNewFile();
+		}
+		inOrderFileWriter = new FileWriter(inOrderDumpFile);
+		inOrderBufferedWriter = new BufferedWriter(inOrderFileWriter);
+		inOrderPrintWriter = new PrintWriter(inOrderBufferedWriter);
+		inOrderEncoder = new Encoder(sequenceLength);
 
-	    recursiveDump(root);
-	    
-	    inOrderPrintWriter.flush();
-	    inOrderPrintWriter.close();
+		recursiveDump(root);
 
-        }
+		inOrderPrintWriter.flush();
+		inOrderPrintWriter.close();
+
+	}
 
 
 	// -- // Private Methods // -- //
 
-       	private BTreeNode split(BTreeNode node){
+	private BTreeNode split(BTreeNode node){
 
 		BTreeNode parent, right;
 		parent = node.getParent();
@@ -100,7 +100,7 @@ public class BTree {
 		if(parent == null){
 			parent = new BTreeNode(maxKeys);
 			parent.insertChild(node);
-      			parent.setbyteOffset(NodeStorage.nextWritePos());
+			parent.setbyteOffset(NodeStorage.nextWritePos());
 			node.setParent(parent.getbyteOffset());
 			root   = parent;
 		}
@@ -111,15 +111,15 @@ public class BTree {
 				node.rightOf(medianKeyIndex),
 				node.getRightChildList(medianKeyIndex),
 				NodeStorage.nextWritePos());
-	
+
 		parent.insertChild(right);
-		
+
 		if(root.getbyteOffset() == parent.getbyteOffset()) {
 			NodeStorage.setRootLocation(root.getbyteOffset());
 			root = parent;
 		}
 		NodeStorage.saveManyNodes(new BTreeNode[] {node, parent, right}, right.getChildList(), right.getbyteOffset());
-	
+
 		return parent;
 	}
 
@@ -127,7 +127,7 @@ public class BTree {
 
 		if(node.isFull()){
 			node = split(node);
-      		}
+		}
 
 		if(!node.isLeaf())
 			recursiveInsert(key, node.getChild(key));
@@ -153,36 +153,36 @@ public class BTree {
 
 	}
 
-    private void recursiveDump(BTreeNode node){
+	private void recursiveDump(BTreeNode node){
 
-	if(node==null) return;
+		if(node==null) return;
 
-	int i;
-        int c = node.numChildren();
+		int i;
+		int c = node.numChildren();
 
-	for(i=0; (i<c && i<degree); i++){
-	    recursiveDump(node.getChild(i));
+		for(i=0; (i<c && i<degree); i++){
+			recursiveDump(node.getChild(i));
+		}
+
+		int k = node.numKeys();
+		int frequency;
+		long key;
+		String sequence;
+		TreeObject t;
+
+		for(i=0; i<k; i++){
+			t = node.treeObjectByIndex(i);
+			frequency = t.getFrequency();
+			sequence = inOrderEncoder.decode(t.getKey());
+			inOrderPrintWriter.print(frequency);
+			inOrderPrintWriter.print("\t");
+			inOrderPrintWriter.print(sequence);
+			inOrderPrintWriter.println();
+		}
+
+		for(i=degree; i<c; i++){
+			recursiveDump(node.getChild(i));
+		}
 	}
-
-	int k = node.numKeys();
-	int frequency;
-	long key;
-	String sequence;
-	TreeObject t;
-
-	for(i=0; i<k; i++){
-	    t = node.treeObjectByIndex(i);
-	    frequency = t.getFrequency();
-	    sequence = inOrderEncoder.decode(t.getKey());
-	    inOrderPrintWriter.print(frequency);
-	    inOrderPrintWriter.print("\t");
-	    inOrderPrintWriter.print(sequence);
-	    inOrderPrintWriter.println();
-	}
-
-	for(i=degree; i<c; i++){
-	    recursiveDump(node.getChild(i));
-	}
-    }
 
 }

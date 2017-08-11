@@ -34,28 +34,28 @@ public class GeneBankSearch {
                 cache = Integer.parseInt(args[0]);
             }
 
-	    BTreeFile = new File(args[1]);
-	    if(!BTreeFile.exists()){
-		BTreeFile.delete();
-		System.err.println("Tree file "+args[1]+" does not exist");
-		printUsage();
-		throw new InvalidParameterException();
-	    } else {
-		if(!args[1].contains(".gbk.btree.data.")){
-		    System.err.println(args[1]+" is not a valid BTree file");
-		    printUsage();
-		    throw new InvalidParameterException();
-		}
-	       
-	    }
-	    queryFile = new File(args[2]);
-	    if(!queryFile.exists()){
-		    queryFile.delete();
-		    System.err.println("query file "+args[2]+" does not exist");
-		    printUsage();
-		    throw new InvalidParameterException();
-	    }
-	    
+            BTreeFile = new File(args[1]);
+            if(!BTreeFile.exists()){
+                BTreeFile.delete();
+                System.err.println("Tree file "+args[1]+" does not exist");
+                printUsage();
+                throw new InvalidParameterException();
+            } else {
+                if(!args[1].contains(".gbk.btree.data.")){
+                    System.err.println(args[1]+" is not a valid BTree file");
+                    printUsage();
+                    throw new InvalidParameterException();
+                }
+
+            }
+            queryFile = new File(args[2]);
+            if(!queryFile.exists()){
+                queryFile.delete();
+                System.err.println("query file "+args[2]+" does not exist");
+                printUsage();
+                throw new InvalidParameterException();
+            }
+
 
             if (args.length > 3) {
                 if (Integer.parseInt(args[0]) == 1) {
@@ -113,35 +113,38 @@ public class GeneBankSearch {
             TreeObject tobj = null;
             BufferedWriter bw = null;
 
-	    if(debugLevel == 1){
-		File dump = new File("searchDump");
-		FileWriter fw = new FileWriter(dump);
-		bw = new BufferedWriter(fw);
-	    }
+            if(debugLevel == 1){
+                File dump = new File("searchDump");
+                FileWriter fw = new FileWriter(dump);
+                bw = new BufferedWriter(fw);
+            }
 
             String line = br.readLine();
 
             if ((tobj = tree.find(encoder.encode(line))) != null)
             {
-		System.out.println(line+" found "+tobj.getFrequency());
-                
-      		if(debugLevel==1)
-		    bw.write(tobj.getFrequency()+"\t"+line+"\n");
+                System.out.print(tobj.getFrequency());
+                System.out.print("\t");
+                System.out.println(line);
+                if(debugLevel==1)
+                    bw.write(tobj.getFrequency()+"\t"+line+"\n");
             }
             while ((line = br.readLine()) != null) {
                 if ((tobj = tree.find(encoder.encode(line))) != null)
                 {
-		    System.out.println(line+" found "+tobj.getFrequency());
-
-		    if(debugLevel==1)
-			bw.write(tobj.getFrequency()+"\t"+line+"\n");
+                    //System.out.println(line+" found "+tobj.getFrequency());
+                    System.out.print(tobj.getFrequency());
+                    System.out.print("\t");
+                    System.out.println(line);
+                    if(debugLevel==1)
+                        bw.write(tobj.getFrequency()+"\t"+line+"\n");
                 }
             }
 
-	    if(debugLevel==1){
-		bw.flush();
-		bw.close();
-	    }
+            if(debugLevel==1){
+                bw.flush();
+                bw.close();
+            }
 
         } catch (Exception e) {
             System.out.println(e);
