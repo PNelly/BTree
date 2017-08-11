@@ -123,9 +123,9 @@ public class GeneBankSearch {
 
             if ((tobj = tree.find(encoder.encode(line))) != null)
             {
-                System.out.print(tobj.getFrequency());
-                System.out.print("\t");
-                System.out.println(line);
+                System.out.print(line.toLowerCase());
+                System.out.print(": ");
+                System.out.println(tobj.getFrequency());
                 if(debugLevel==1)
                     bw.write(tobj.getFrequency()+"\t"+line+"\n");
             }
@@ -133,9 +133,9 @@ public class GeneBankSearch {
                 if ((tobj = tree.find(encoder.encode(line))) != null)
                 {
                     //System.out.println(line+" found "+tobj.getFrequency());
-                    System.out.print(tobj.getFrequency());
-                    System.out.print("\t");
-                    System.out.println(line);
+                    System.out.print(line.toLowerCase());
+                    System.out.print(": ");
+                    System.out.println(tobj.getFrequency());
                     if(debugLevel==1)
                         bw.write(tobj.getFrequency()+"\t"+line+"\n");
                 }
